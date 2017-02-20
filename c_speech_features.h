@@ -12,8 +12,8 @@
 
 #include <math.h>
 
-#define CSF_HZ2MEL(x) (2595 * log10f(1+x/700.0f))
-#define CSF_MEL2HZ(x) (700 * (powf(10.0f, x/2595.0f) - 1))
+#define CSF_HZ2MEL(x) (2595 * log10f(1+(x)/700.0f))
+#define CSF_MEL2HZ(x) (700 * (powf(10.0f, (x)/2595.0f) - 1))
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,8 +38,9 @@ extern "C" {
  *                   (e.g. 22)
  * @param aAppendEnergy If this is true, the zeroth cepstral coefficient is
  *                      replaced with the log of the total frame energy.
- * @param[out] aMFCC An allocated array containing features, of shape
- *                   (frames, @p aNCep)
+ * @param[out] aMFCC An array containing features, of shape
+ *                   (frames, @p aNCep). The user is responsible for freeing
+ *                   each row in the array, as well as the array itself.
  *
  * @return The number of frames.
  */
@@ -74,9 +75,12 @@ int csf_mfcc(const short* aSignal,
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
  *                  higher than @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param[out] aFeatures An allocated array containing features, of shape
- *                       (frames, @p aNFilters).
- * @param[out] aEnergy An allocated array containing energies, of shape (frames)
+ * @param[out] aFeatures An array containing features, of shape
+ *                       (frames, @p aNFilters). The user is responsible for
+ *                       freeing each row in the array, as well as the array
+ *                       itself.
+ * @param[out] aEnergy An array containing energies, of shape (frames). The
+ *                     user is responsible for freeing the array.
  *
  * @return The number of frames.
  */
@@ -142,7 +146,7 @@ void csf_lifter(float** aCepstra,
  * @param aSignalLen The length of the signal array.
  * @param aCoeff The preemphasis coefficient. 0 is no filter. (e.g. 0.95)
  *
- * @return The filtered signal.
+ * @return The filtered signal. The user is responsible for freeing this array.
  */
 float* csf_preemphasis(const short* aSignal,
                        unsigned int aSignalLen,
@@ -161,6 +165,8 @@ float* csf_preemphasis(const short* aSignal,
  * @param aFrameStep The number of samples after the start of the previous frame
  *                   that the next frame should begin.
  * @param[out] aFrames An array of frames, of shape (@c frames, @p aFrameLen).
+ *                     The user is responsible for freeing each row in this
+ *                     array, as well as the array itself.
  *
  * @return The number of frames.
  */
@@ -179,11 +185,12 @@ int csf_framesig(const float* aSignal,
  *
  * @param aFrames The array of frames.
  * @param aNFrames The number of frames.
- * @param aNFFT The FFT length to use. If @p aNFFT > @p aNFrames, the frames
- *              are zero padded.
+ * @param aNFFT The FFT length to use.
  *
- * @return An allocated array containing the magnitude spectrum of the
- *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
+ * @return An array containing the magnitude spectrum of the
+ *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1). The
+ *         user is responsible for freeing each row in this array, as well as
+ *         the array itself.
  */
 float** csf_magspec(const float** aFrames,
                     int aNFrames,
@@ -197,11 +204,12 @@ float** csf_magspec(const float** aFrames,
  *
  * @param aFrames The array of frames.
  * @param aNFrames The number of frames.
- * @param aNFFT The FFT length to use. If @p aNFFT > @p aNFrames, the frames
- *              are zero padded.
+ * @param aNFFT The FFT length to use.
  *
- * @return An allocated array containing the power spectrum of the
+ * @return An array containing the power spectrum of the
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
+ *         The user is responsible for freeing each row in this array, as well
+ *         as the array itself.
  */
 float** csf_powspec(const float** aFrames,
                     int aNFrames,

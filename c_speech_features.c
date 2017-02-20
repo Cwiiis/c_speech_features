@@ -86,6 +86,12 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   // Compute the power spectrum of the frames
   pspec = csf_powspec((const float**)frames, n_frames, aNFFT);
 
+  // Free frames
+  for (i = 0; i < n_frames; i++) {
+    free(frames[i]);
+  }
+  free(frames);
+
   // Store the total energy in each frame
   energy = (float*)calloc(sizeof(float), n_frames);
   for (i = 0; i < n_frames; i++) {
@@ -112,6 +118,12 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
       }
     }
   }
+
+  // Free fbank
+  for (i = 0; i < aNFilters; i++) {
+    free(fbank[i]);
+  }
+  free(fbank);
 
   // Free pspec
   for (i = 0; i < n_frames; i++) {
