@@ -188,12 +188,11 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
 {
   int** indices;
   float** frames;
-  int i, j, padlen, n_frames = 1;
+  int i, j, n_frames = 1;
 
   if (aSignalLen > aFrameLen) {
     n_frames = 1 + (int)ceilf((aSignalLen - aFrameLen) / (float)aFrameStep);
   }
-  padlen = (n_frames - 1) * aFrameStep + aFrameLen;
 
   indices = (int**)malloc(sizeof(int*) * n_frames);
   for (i = 0; i < n_frames; i++) {
