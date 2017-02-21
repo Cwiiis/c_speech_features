@@ -180,8 +180,7 @@ int csf_framesig(const float* aSignal,
 /**
  * @brief Compute the magnitude spectrum of frames.
  *
- * Compute the magnitude spectrum of each frame in frames. If frames is an
- * NxD matrix, output will be Nx@p aNFFT.
+ * Compute the magnitude spectrum of each frame in frames.
  *
  * @param aFrames The array of frames.
  * @param aNFrames The number of frames.
@@ -199,8 +198,7 @@ float** csf_magspec(const float** aFrames,
 /**
  * @brief Compute the power spectrum of frames.
  *
- * Compute the power spectrum of each frame in frames. If frames is an
- * NxD matrix, output will be Nx@p aNFFT.
+ * Compute the power spectrum of each frame in frames.
  *
  * @param aFrames The array of frames.
  * @param aNFrames The number of frames.
