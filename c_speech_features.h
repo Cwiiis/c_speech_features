@@ -98,6 +98,39 @@ int csf_fbank(const short* aSignal,
               float** aEnergy);
 
 /**
+ * @brief Compute Spectral Sub-band Centroid features from an audio signal.
+ *
+ * Compute Spectral Sub-band Centroid features from an audio signal.
+ *
+ * @param aSignal The audio signal from which to compute features.
+ * @param aSignalLen The length of the audio signal array.
+ * @param aSampleRate The sample-rate of the signal.
+ * @param aWinLen The length of the analysis window in seconds. (e.g. 0.025)
+ * @param aWinStep The step between successive windows in seconds. (e.g. 0.01)
+ * @param aNFilters The number of filters in the filterbank. (e.g. 26)
+ * @param aNFFT The FFT size. (e.g. 512)
+ * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
+ * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
+ *                  higher than @p aSampleRate / 2.
+ * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
+ * @param[out] aFeatures An array containing features, of shape
+ *                       (frames, @p aNFilters). The user is responsible for
+ *                       freeing each row in the array, as well as the array
+ *                       itself.
+ */
+int csf_ssc(const short* aSignal,
+            unsigned int aSignalLen,
+            int aSampleRate,
+            float aWinLen,
+            float aWinStep,
+            int aNFilters,
+            int aNFFT,
+            int aLowFreq,
+            int aHighFreq,
+            float aPreemph,
+            float*** aFeatures);
+
+/**
  * @brief Compute a Mel-filterbank.
  *
  * Compute a Mel-filterbank. The filters are stored in the rows, the columns

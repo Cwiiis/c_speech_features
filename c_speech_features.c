@@ -138,6 +138,94 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   return n_frames;
 }
 
+int
+csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
+        float aWinLen, float aWinStep, int aNFilters, int aNFFT,
+        int aLowFreq, int aHighFreq, float aPreemph, float*** aFeatures)
+{
+  int i, j, k;
+  float** ssc;
+  float** feat;
+  float** fbank;
+  float** pspec;
+  float** frames;
+  float* preemph = csf_preemphasis(aSignal, aSignalLen, aPreemph);
+  int frame_len = (int)roundf(aWinLen * aSampleRate);
+  int frame_step = (int)roundf(aWinStep * aSampleRate);
+
+  // Frame the signal into overlapping frames
+  int n_frames = csf_framesig(preemph, aSignalLen, frame_len, aNFFT,
+                              frame_step, &frames);
+
+  // Free preemphasised signal buffer
+  free(preemph);
+
+  // Compute the power spectrum of the frames
+  pspec = csf_powspec((const float**)frames, n_frames, aNFFT);
+
+  // Free frames
+  for (i = 0; i < n_frames; i++) {
+    free(frames[i]);
+  }
+  free(frames);
+
+  // Make sure there are no zeroes in the power spectrum
+  for (i = 0; i < n_frames; i++) {
+    for (j = 0; j < aNFFT / 2 + 1; j++) {
+      if (pspec[i][j] == 0.0f) {
+        pspec[i][j] = FLT_MIN;
+      }
+    }
+  }
+
+  // Compute the filter-bank energies
+  fbank = csf_get_filterbanks(aNFilters, aNFFT, aSampleRate,
+                              aLowFreq, aHighFreq);
+  feat = (float**)malloc(sizeof(float*) * n_frames);
+  for (i = 0; i < n_frames; i++) {
+    feat[i] = (float*)calloc(sizeof(float), aNFilters);
+    for (j = 0; j < aNFilters; j++) {
+      for (k = 0; k < aNFFT / 2 + 1; k++) {
+        feat[i][j] += pspec[i][k] * fbank[j][k];
+      }
+    }
+  }
+
+  // Calculate Spectral Sub-band Centroid features
+  ssc = (float**)malloc(sizeof(float*) * n_frames);
+  float r = ((aSampleRate / 2) - 1) / (float)(aNFFT / 2);
+  for (i = 0; i < n_frames; i++) {
+    ssc[i] = (float*)calloc(sizeof(float), aNFilters);
+    for (j = 0; j < aNFilters; j++) {
+      float R = 1;
+      for (k = 0; k < aNFFT / 2 + 1; k++) {
+        ssc[i][j] += pspec[i][k] * R * fbank[j][k];
+        R += r;
+      }
+      ssc[i][j] /= feat[i][j];
+    }
+  }
+
+  // Free fbank
+  for (i = 0; i < aNFilters; i++) {
+    free(fbank[i]);
+  }
+  free(fbank);
+
+  // Free pspec and feat
+  for (i = 0; i < n_frames; i++) {
+    free(pspec[i]);
+    free(feat[i]);
+  }
+  free(pspec);
+  free(feat);
+
+  // Return features
+  *aFeatures = ssc;
+
+  return n_frames;
+}
+
 void
 csf_lifter(float** aCepstra, int aNFrames, int aNCep, int aCepLifter)
 {
