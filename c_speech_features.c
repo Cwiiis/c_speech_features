@@ -309,6 +309,35 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
   return n_frames;
 }
 
+int
+csf_deframesig(const float** aFrames, int aNFrames, int aSigLen,
+               int aFrameLen, int aFrameStep, float** aSignal)
+{
+  int i, j, base;
+  float* signal;
+  int padlen = (aNFrames - 1) * aFrameStep + aFrameLen;
+
+  if (aSigLen <= 0) {
+    aSigLen = padlen;
+  }
+
+  base = 0;
+  signal = (float*)calloc(sizeof(float), aSigLen);
+  for (i = 0; i < aNFrames; i++) {
+    for (j = 0; j < aFrameLen; j++) {
+      int idx = j + base;
+      if (idx >= aSigLen) {
+        continue;
+      }
+      signal[idx] += aFrames[i][j];
+    }
+    base += aFrameStep;
+  }
+
+  *aSignal = signal;
+  return aSigLen;
+}
+
 float*
 csf_preemphasis(const short* aSignal, unsigned int aSignalLen, float aCoeff)
 {

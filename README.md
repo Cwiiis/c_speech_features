@@ -1,6 +1,6 @@
 # C Speech Features
 
-This library is an incomplete port of [python_speech_features](https://github.com/jameslyons/python_speech_features) to C.
+This library is a mostly complete port of [python_speech_features](https://github.com/jameslyons/python_speech_features) to C.
 
 ## Usage
 

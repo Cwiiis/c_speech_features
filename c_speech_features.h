@@ -211,6 +211,30 @@ int csf_framesig(const float* aSignal,
                  float*** aFrames);
 
 /**
+ * @brief Perform overlap-add procedure to undo the action of csf_framesig().
+ *
+ * Perform overlap-add procedure to undo the action of csf_framesig().
+ *
+ * @param aFrames The array of frames.
+ * @param aNFrames The number of frames in @p aFrames.
+ * @param aSigLen The length of the desired signal, or 0 if unknown.
+ * @param aFrameLen The length of each frame in samples.
+ * @param aFrameStep The number of samples after the start of the previous frame
+ *                   that the next frame begins
+ * @param[out] aSignal An array of samples. The length will be @p aSigLen if
+ *                     specified. The user is responsible for freeing
+ *                     this array.
+ *
+ * @return Returns the length of @p aSignal.
+ */
+int csf_deframesig(const float** aFrames,
+                   int aNFrames,
+                   int aSigLen,
+                   int aFrameLen,
+                   int aFrameStep,
+                   float** aSignal);
+
+/**
  * @brief Compute the magnitude spectrum of frames.
  *
  * Compute the magnitude spectrum of each frame in frames.
