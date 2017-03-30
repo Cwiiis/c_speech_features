@@ -16,18 +16,15 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   float** feat;
   float* energy;
 
-  int n_frames = csf_fbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
-                           aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
-                           &feat, &energy);
+  int n_frames = csf_logfbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
+                              aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
+                              &feat, &energy);
 
   // Perform DCT-II
   float sf1 = sqrtf(1 / (4 * (float)aNFilters));
   float sf2 = sqrtf(1 / (2 * (float)aNFilters));
   float** mfcc = (float**)malloc(sizeof(float*) * n_frames);
   for (i = 0; i < n_frames; i++) {
-    for (j = 0; j < aNFilters; j++) {
-      feat[i][j] = logf(feat[i][j]);
-    }
     mfcc[i] = (float*)calloc(sizeof(float), aNCep);
     for (j = 0; j < aNCep; j++) {
       for (k = 0; k < aNCep; k++) {
@@ -140,6 +137,26 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 }
 
 int
+csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
+             float aWinLen, float aWinStep, int aNFilters, int aNFFT,
+             int aLowFreq, int aHighFreq, float aPreemph,
+             float*** aFeatures, float** aEnergy)
+{
+  int i, j;
+  int n_frames = csf_fbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
+                           aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
+                           aFeatures, aEnergy);
+
+  for (i = 0; i < n_frames; i++) {
+    for (j = 0; j < aNFilters; j++) {
+      (*aFeatures)[i][j] = logf((*aFeatures)[i][j]);
+    }
+  }
+
+  return n_frames;
+}
+
+int
 csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
         float aWinLen, float aWinStep, int aNFilters, int aNFFT,
         int aLowFreq, int aHighFreq, float aPreemph, float*** aFeatures)
@@ -225,6 +242,18 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   *aFeatures = ssc;
 
   return n_frames;
+}
+
+float
+csf_hz2mel(float aHz)
+{
+  return CSF_HZ2MEL(aHz);
+}
+
+float
+csf_mel2hz(float aMel)
+{
+  return CSF_MEL2HZ(aMel);
 }
 
 void
@@ -419,5 +448,38 @@ csf_powspec(const float** aFrames, int aNFrames, int aNFFT)
     }
   }
   return pspec;
+}
+
+float**
+csf_logpowspec(const float** aFrames, int aNFrames, int aNFFT, int aNorm)
+{
+  int i, j;
+  const int fft_out = aNFFT / 2 + 1;
+
+  float** logpspec = csf_powspec(aFrames, aNFrames, aNFFT);
+
+  float max = 0;
+  for (i = 0; i < aNFrames; i++) {
+    for (j = 0; j < fft_out; j++) {
+      if (logpspec[i][j] < 1e-30f) {
+        logpspec[i][j] = -300;
+      } else {
+        logpspec[i][j] = 10.0f * log10f(logpspec[i][j]);
+      }
+      if (aNorm && logpspec[i][j] > max) {
+        max = logpspec[i][j];
+      }
+    }
+  }
+
+  if (aNorm) {
+    for (i = 0; i < aNFrames; i++) {
+      for (j = 0; j < fft_out; j++) {
+        logpspec[i][j] -= max;
+      }
+    }
+  }
+
+  return logpspec;
 }
 

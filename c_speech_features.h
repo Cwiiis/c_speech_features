@@ -98,6 +98,44 @@ int csf_fbank(const short* aSignal,
               float** aEnergy);
 
 /**
+ * @brief Compute log Mel-filterbank energy features from an audio signal.
+ *
+ * Compute log Mel-filterbank energy features from an audio signal.
+ *
+ * @param aSignal The audio signal from which to compute features.
+ * @param aSignalLen The length of the audio signal array.
+ * @param aSampleRate The sample-rate of the signal.
+ * @param aWinLen The length of the analysis window in seconds. (e.g. 0.025)
+ * @param aWinStep The step between successive windows in seconds. (e.g. 0.01)
+ * @param aNFilters The number of filters in the filterbank. (e.g. 26)
+ * @param aNFFT The FFT size. (e.g. 512)
+ * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
+ * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
+ *                  higher than @p aSampleRate / 2.
+ * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
+ * @param[out] aFeatures An array containing features, of shape
+ *                       (frames, @p aNFilters). The user is responsible for
+ *                       freeing each row in the array, as well as the array
+ *                       itself.
+ * @param[out] aEnergy An array containing energies, of shape (frames). The
+ *                     user is responsible for freeing the array.
+ *
+ * @return The number of frames.
+ */
+int csf_logfbank(const short* aSignal,
+                 unsigned int aSignalLen,
+                 int aSampleRate,
+                 float aWinLen,
+                 float aWinStep,
+                 int aNFilters,
+                 int aNFFT,
+                 int aLowFreq,
+                 int aHighFreq,
+                 float aPreemph,
+                 float*** aFeatures,
+                 float** aEnergy);
+
+/**
  * @brief Compute Spectral Sub-band Centroid features from an audio signal.
  *
  * Compute Spectral Sub-band Centroid features from an audio signal.
@@ -129,6 +167,28 @@ int csf_ssc(const short* aSignal,
             int aHighFreq,
             float aPreemph,
             float*** aFeatures);
+
+/**
+ * @brief Convert a value in Hertz to Mels
+ *
+ * Convert a value in Hertz to Mels
+ *
+ * @param aHz A value in Hz.
+ *
+ * @return A value in Mels.
+ */
+float csf_hz2mel(float aHz);
+
+/**
+ * @brief Convert a value in Mels to Hertz
+ *
+ * Convert a value in Mels to Hertz
+ *
+ * @param aMel A value in Mels.
+ *
+ * @return A value in Hz.
+ */
+float csf_mel2hz(float aMel);
 
 /**
  * @brief Compute a Mel-filterbank.
@@ -293,6 +353,27 @@ float** csf_magspec(const float** aFrames,
 float** csf_powspec(const float** aFrames,
                     int aNFrames,
                     int aNFFT);
+
+/**
+ * @brief Compute the log power spectrum of frames.
+ *
+ * Compute the log power spectrum of each frame in frames.
+ *
+ * @param aFrames The array of frames.
+ * @param aNFrames The number of frames.
+ * @param aNFFT The FFT length to use.
+ * @param aNorm If not zero, the log power spectrum is normalised so that the
+ *              maximum value across all frames is 0.
+ *
+ * @return An array containing the log power spectrum of the
+ *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
+ *         The user is responsible for freeing each row in this array, as well
+ *         as the array itself.
+ */
+float** csf_logpowspec(const float** aFrames,
+                       int aNFrames,
+                       int aNFFT,
+                       int aNorm);
 
 #ifdef __cplusplus
 }
