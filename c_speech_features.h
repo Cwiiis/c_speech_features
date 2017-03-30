@@ -145,7 +145,9 @@ int csf_ssc(const short* aSignal,
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
  *                  higher than @p aSampleRate / 2.
  *
- * @return An array of shape (@p aNFilters, @p aNFFT / 2 + 1)
+ * @return An array of shape (@p aNFilters, @p aNFFT / 2 + 1). The user is
+ *         responsible for freeing each row in the array, as well as the array
+ *         itself.
  */
 float** csf_get_filterbanks(int aNFilters,
                             int aNFFT,
@@ -169,6 +171,28 @@ void csf_lifter(float** aCepstra,
                 int aNFrames,
                 int aNCep,
                 int aCepLifter);
+
+/**
+ * @brief Compute delta features from a feature vector sequence.
+ *
+ * Compute delta features from a feature vector sequence.
+ *
+ * @param aFeatures An array of shape (@p aNFeatures, @p aNFrames). Each row
+ *                  holds one feature vector.
+ * @param aNFrames The number of frames in @p aFeatures.
+ * @param aNFrameLen The length of each frame in @p aFeatures.
+ * @param @aN For each frame, calculate delta features based on preceding and
+ *            following N frames. Must be 1 or larger.
+ *
+ * @return An array of shape (@p aNFeatures, @p aNFrames) containing delta
+ *         features. Each row contains holds 1 delta feature vector. The user
+ *         is responsible for freeing each row in the array, as well as the
+ *         array itself.
+ */
+float** csf_delta(const float** aFeatures,
+                  int aNFrames,
+                  int aNFrameLen,
+                  int aN);
 
 /**
  * @brief Perform preemphasis on an input signal.

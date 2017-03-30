@@ -4,6 +4,7 @@
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
+#define CLAMP(x,y,z) MIN(MAX(x,y),z)
 
 int
 csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
@@ -234,6 +235,36 @@ csf_lifter(float** aCepstra, int aNFrames, int aNCep, int aCepLifter)
       aCepstra[i][j] *= 1 + (aCepLifter / 2.0f) * sinf(M_PI * j / aCepLifter);
     }
   }
+}
+
+float**
+csf_delta(const float** aFeatures, int aNFrames, int aNFrameLen, int aN)
+{
+  int i, j, k;
+  float** delta;
+
+  if (aN < 1) {
+    return NULL;
+  }
+
+  int denominator = 0;
+  for (i = 1; i <= aN; i++) {
+    denominator += pow(i, 2);
+  }
+  denominator *= 2;
+
+  delta = (float**)malloc(sizeof(float*) * aNFrames);
+  for (i = 0; i < aNFrames; i++) {
+    delta[i] = (float*)calloc(sizeof(float), aNFrameLen);
+    for (j = 0; j < aNFrameLen; j++) {
+      for (k = -aN; k <= aN; k++) {
+        delta[i][j] += k * aFeatures[CLAMP(i + k, 0, aNFrames - 1)][j];
+      }
+      delta[i][j] /= denominator;
+    }
+  }
+
+  return delta;
 }
 
 float**
