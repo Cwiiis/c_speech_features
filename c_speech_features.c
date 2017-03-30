@@ -10,7 +10,7 @@ int
 csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
          float aWinLen, float aWinStep, int aNCep, int aNFilters, int aNFFT,
          int aLowFreq, int aHighFreq, float aPreemph, int aCepLifter,
-         int aAppendEnergy, float*** aMFCC)
+         int aAppendEnergy, float* aWinFunc, float*** aMFCC)
 {
   int i, j, k;
   float** feat;
@@ -18,7 +18,7 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
   int n_frames = csf_logfbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
                               aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
-                              &feat, &energy);
+                              aWinFunc, &feat, &energy);
 
   // Perform DCT-II
   float sf1 = sqrtf(1 / (4 * (float)aNFilters));
@@ -61,7 +61,7 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 int
 csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
           float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-          int aLowFreq, int aHighFreq, float aPreemph,
+          int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
           float*** aFeatures, float** aEnergy)
 {
   int i, j, k;
@@ -76,7 +76,7 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
   // Frame the signal into overlapping frames
   int n_frames = csf_framesig(preemph, aSignalLen, frame_len, aNFFT,
-                              frame_step, &frames);
+                              frame_step, aWinFunc, &frames);
 
   // Free preemphasised signal buffer
   free(preemph);
@@ -139,13 +139,13 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 int
 csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
              float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-             int aLowFreq, int aHighFreq, float aPreemph,
+             int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
              float*** aFeatures, float** aEnergy)
 {
   int i, j;
   int n_frames = csf_fbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
                            aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
-                           aFeatures, aEnergy);
+                           aWinFunc, aFeatures, aEnergy);
 
   for (i = 0; i < n_frames; i++) {
     for (j = 0; j < aNFilters; j++) {
@@ -159,7 +159,8 @@ csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 int
 csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
         float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-        int aLowFreq, int aHighFreq, float aPreemph, float*** aFeatures)
+        int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
+        float*** aFeatures)
 {
   int i, j, k;
   float** ssc;
@@ -173,7 +174,7 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
   // Frame the signal into overlapping frames
   int n_frames = csf_framesig(preemph, aSignalLen, frame_len, aNFFT,
-                              frame_step, &frames);
+                              frame_step, aWinFunc, &frames);
 
   // Free preemphasised signal buffer
   free(preemph);
@@ -332,7 +333,8 @@ csf_get_filterbanks(int aNFilters, int aNFFT, int aSampleRate,
 
 int
 csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
-             int aPaddedFrameLen, int aFrameStep, float*** aFrames)
+             int aPaddedFrameLen, int aFrameStep, float* aWinFunc,
+             float*** aFrames)
 {
   int** indices;
   float** frames;
@@ -357,6 +359,9 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
     for (j = 0; j < aFrameLen; j++) {
       int index = indices[i][j];
       frames[i][j] = index < aSignalLen ? aSignal[index] : 0.0f;
+      if (aWinFunc) {
+        frames[i][j] *= aWinFunc[j];
+      }
     }
     for (j = aFrameLen; j < aPaddedFrameLen; j++) {
       frames[i][j] = 0.0f;
@@ -371,14 +376,19 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
 
 int
 csf_deframesig(const float** aFrames, int aNFrames, int aSigLen,
-               int aFrameLen, int aFrameStep, float** aSignal)
+               int aFrameLen, int aFrameStep, float* aWinFunc, float** aSignal)
 {
   int i, j, base;
   float* signal;
+  float* win_correct;
   int padlen = (aNFrames - 1) * aFrameStep + aFrameLen;
 
   if (aSigLen <= 0) {
     aSigLen = padlen;
+  }
+
+  if (aWinFunc) {
+    win_correct = (float*)calloc(sizeof(float), aSigLen);
   }
 
   base = 0;
@@ -390,8 +400,18 @@ csf_deframesig(const float** aFrames, int aNFrames, int aSigLen,
         continue;
       }
       signal[idx] += aFrames[i][j];
+      if (aWinFunc) {
+        win_correct[idx] += aWinFunc[j] + 1e-15;
+      }
     }
     base += aFrameStep;
+  }
+
+  if (aWinFunc) {
+    for (i = 0; i < aSigLen; i++) {
+      signal[i] /= win_correct[i];
+    }
+    free(win_correct);
   }
 
   *aSignal = signal;
