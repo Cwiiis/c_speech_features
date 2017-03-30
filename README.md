@@ -18,4 +18,13 @@ kiss_fft130/kiss_fft.c
 kiss_fft130/tools/kiss_fftr.c
 ```
 
+Alternatively, you can build shared and static libraries to use with your project instead of importing the files directly. Using cmake, from within a check-out:
+
+```
+cmake .
+make
+```
+
+This will result in libc_speech_features.so and libc_speech_features_static.a being built (or platform equivalents), which you can link in your project.
+
 Refer to [c_speech_features.h](c_speech_features.h) for documentation.
