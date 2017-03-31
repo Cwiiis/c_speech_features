@@ -15,6 +15,9 @@
 #define CSF_HZ2MEL(x) (2595 * log10f(1+(x)/700.0f))
 #define CSF_MEL2HZ(x) (700 * (powf(10.0f, (x)/2595.0f) - 1))
 
+#define CSF_2D_INDEX(w,x,y) (((y)*(w))+(x))
+#define CSF_2D_REF(m,w,x,y) ((m)[CSF_2D_INDEX(w,x,y)])
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,17 +35,18 @@ extern "C" {
  * @param aNFFT The FFT size. (e.g. 512)
  * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
- *                  higher than @p aSampleRate / 2.
+ *                  higher than @p aSampleRate / 2. If this is lower or equal
+ *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
  * @param aCepLifter The lifting coefficient to use. 0 disables lifting.
  *                   (e.g. 22)
  * @param aAppendEnergy If this is true, the zeroth cepstral coefficient is
  *                      replaced with the log of the total frame energy.
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
  * @param[out] aMFCC An array containing features, of shape
  *                   (frames, @p aNCep). The user is responsible for freeing
- *                   each row in the array, as well as the array itself.
+ *                   the array.
  *
  * @return The number of frames.
  */
@@ -60,7 +64,7 @@ int csf_mfcc(const short* aSignal,
              int aCepLifter,
              int aAppendEnergy,
              float* aWinFunc,
-             float*** aMFCC);
+             float** aMFCC);
 
 /**
  * @brief Compute Mel-filterbank energy features from an audio signal.
@@ -76,16 +80,16 @@ int csf_mfcc(const short* aSignal,
  * @param aNFFT The FFT size. (e.g. 512)
  * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
- *                  higher than @p aSampleRate / 2.
+ *                  higher than @p aSampleRate / 2. If this is lower or equal
+ *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
- * @param[out] aFeatures An array containing features, of shape
+ * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
- *                       freeing each row in the array, as well as the array
- *                       itself.
- * @param[out] aEnergy An array containing energies, of shape (frames). The
- *                     user is responsible for freeing the array.
+ *                       freeing the array.
+ * @param[out] aEnergy An array containing energies, of shape (frames), or
+ *                     @c NULL. The user is responsible for freeing the array.
  *
  * @return The number of frames.
  */
@@ -100,7 +104,7 @@ int csf_fbank(const short* aSignal,
               int aHighFreq,
               float aPreemph,
               float* aWinFunc,
-              float*** aFeatures,
+              float** aFeatures,
               float** aEnergy);
 
 /**
@@ -117,14 +121,14 @@ int csf_fbank(const short* aSignal,
  * @param aNFFT The FFT size. (e.g. 512)
  * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
- *                  higher than @p aSampleRate / 2.
+ *                  higher than @p aSampleRate / 2. If this is lower or equal
+ *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
- * @param[out] aFeatures An array containing features, of shape
+ * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
- *                       freeing each row in the array, as well as the array
- *                       itself.
+ *                       freeing the array.
  * @param[out] aEnergy An array containing energies, of shape (frames). The
  *                     user is responsible for freeing the array.
  *
@@ -141,7 +145,7 @@ int csf_logfbank(const short* aSignal,
                  int aHighFreq,
                  float aPreemph,
                  float* aWinFunc,
-                 float*** aFeatures,
+                 float** aFeatures,
                  float** aEnergy);
 
 /**
@@ -158,14 +162,14 @@ int csf_logfbank(const short* aSignal,
  * @param aNFFT The FFT size. (e.g. 512)
  * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
- *                  higher than @p aSampleRate / 2.
+ *                  higher than @p aSampleRate / 2. If this is lower or equal
+ *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
- * @param[out] aFeatures An array containing features, of shape
+ * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
- *                       freeing each row in the array, as well as the array
- *                       itself.
+ *                       freeing the array.
  */
 int csf_ssc(const short* aSignal,
             unsigned int aSignalLen,
@@ -178,7 +182,7 @@ int csf_ssc(const short* aSignal,
             int aHighFreq,
             float aPreemph,
             float* aWinFunc,
-            float*** aFeatures);
+            float** aFeatures);
 
 /**
  * @brief Convert a value in Hertz to Mels
@@ -215,13 +219,13 @@ float csf_mel2hz(float aMel);
  *                    mel spacing.
  * @param aLowFreq The lowest band edge of mel filters, in hz. (e.g. 0)
  * @param aHighFreq The highest band edge of mel filters, in hz. Must not be
- *                  higher than @p aSampleRate / 2.
+ *                  higher than @p aSampleRate / 2. If this is lower or equal
+ *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  *
- * @return An array of shape (@p aNFilters, @p aNFFT / 2 + 1). The user is
- *         responsible for freeing each row in the array, as well as the array
- *         itself.
+ * @return A 2D array of shape (@p aNFilters, @p aNFFT / 2 + 1). The user is
+ *         responsible for freeing the array.
  */
-float** csf_get_filterbanks(int aNFilters,
+float*  csf_get_filterbanks(int aNFilters,
                             int aNFFT,
                             int aSampleRate,
                             int aLowFreq,
@@ -233,13 +237,13 @@ float** csf_get_filterbanks(int aNFilters,
  * Apply a cepstral lifter on a matrix of cepstra. This has the effect of
  * increasing the magnitude of high-frequency DCT coefficients.
  *
- * @param aCepstra The matrix of mel-cepstra.
+ * @param aCepstra The 2D array matrix of mel-cepstra.
  * @param aNFrames The number of frames.
  * @param aNCep The number of cepstra per frame.
  * @param aCepLifter The lifting coefficient to use. 0 disables lifting.
  *                   (e.g. 22)
  */
-void csf_lifter(float** aCepstra,
+void csf_lifter(float* aCepstra,
                 int aNFrames,
                 int aNCep,
                 int aCepLifter);
@@ -249,22 +253,21 @@ void csf_lifter(float** aCepstra,
  *
  * Compute delta features from a feature vector sequence.
  *
- * @param aFeatures An array of shape (@p aNFeatures, @p aNFrames). Each row
+ * @param aFeatures A 2D array of shape (@p aNFeatures, @p aNFrames). Each row
  *                  holds one feature vector.
  * @param aNFrames The number of frames in @p aFeatures.
  * @param aNFrameLen The length of each frame in @p aFeatures.
  * @param @aN For each frame, calculate delta features based on preceding and
  *            following N frames. Must be 1 or larger.
  *
- * @return An array of shape (@p aNFeatures, @p aNFrames) containing delta
+ * @return A 2D array of shape (@p aNFeatures, @p aNFrames) containing delta
  *         features. Each row contains holds 1 delta feature vector. The user
- *         is responsible for freeing each row in the array, as well as the
- *         array itself.
+ *         is responsible for freeing the array.
  */
-float** csf_delta(const float** aFeatures,
-                  int aNFrames,
-                  int aNFrameLen,
-                  int aN);
+float* csf_delta(const float* aFeatures,
+                 int aNFrames,
+                 int aNFrameLen,
+                 int aN);
 
 /**
  * @brief Perform preemphasis on an input signal.
@@ -293,11 +296,11 @@ float* csf_preemphasis(const short* aSignal,
  *                        @p aFrameLen zeros will be appended to each frame.
  * @param aFrameStep The number of samples after the start of the previous frame
  *                   that the next frame should begin.
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
- * @param[out] aFrames An array of frames, of shape (@c frames, @p aFrameLen).
- *                     The user is responsible for freeing each row in this
- *                     array, as well as the array itself.
+ * @param[out] aFrames A 2D array of frames, of shape
+ *                     (@c frames, @p aPaddedFrameLen).
+ *                     The user is responsible for freeing the array.
  *
  * @return The number of frames.
  */
@@ -307,20 +310,20 @@ int csf_framesig(const float* aSignal,
                  int aPaddedFrameLen,
                  int aFrameStep,
                  float* aWinFunc,
-                 float*** aFrames);
+                 float** aFrames);
 
 /**
  * @brief Perform overlap-add procedure to undo the action of csf_framesig().
  *
  * Perform overlap-add procedure to undo the action of csf_framesig().
  *
- * @param aFrames The array of frames.
+ * @param aFrames The 2D array of frames.
  * @param aNFrames The number of frames in @p aFrames.
  * @param aSigLen The length of the desired signal, or 0 if unknown.
  * @param aFrameLen The length of each frame in samples.
  * @param aFrameStep The number of samples after the start of the previous frame
  *                   that the next frame begins
- * @param aWinFunc An array of size @p aFrameLen, or `NULL` to be used as an
+ * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
  *                 analysis window to apply to each frame.
  * @param[out] aSignal An array of samples. The length will be @p aSigLen if
  *                     specified. The user is responsible for freeing
@@ -328,7 +331,7 @@ int csf_framesig(const float* aSignal,
  *
  * @return Returns the length of @p aSignal.
  */
-int csf_deframesig(const float** aFrames,
+int csf_deframesig(const float* aFrames,
                    int aNFrames,
                    int aSigLen,
                    int aFrameLen,
@@ -341,57 +344,54 @@ int csf_deframesig(const float** aFrames,
  *
  * Compute the magnitude spectrum of each frame in frames.
  *
- * @param aFrames The array of frames.
+ * @param aFrames The 2D array of frames, of shape (@p aNFrames, @p aNFFT).
  * @param aNFrames The number of frames.
  * @param aNFFT The FFT length to use.
  *
- * @return An array containing the magnitude spectrum of the
+ * @return A 2D array containing the magnitude spectrum of the
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1). The
- *         user is responsible for freeing each row in this array, as well as
- *         the array itself.
+ *         user is responsible for freeing the array.
  */
-float** csf_magspec(const float** aFrames,
-                    int aNFrames,
-                    int aNFFT);
+float* csf_magspec(const float* aFrames,
+                   int aNFrames,
+                   int aNFFT);
 
 /**
  * @brief Compute the power spectrum of frames.
  *
  * Compute the power spectrum of each frame in frames.
  *
- * @param aFrames The array of frames.
+ * @param aFrames The 2D array of frames, of shape (@p aNFrames, @p aNFFT).
  * @param aNFrames The number of frames.
  * @param aNFFT The FFT length to use.
  *
- * @return An array containing the power spectrum of the
+ * @return A 2D array containing the power spectrum of the
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
- *         The user is responsible for freeing each row in this array, as well
- *         as the array itself.
+ *         The user is responsible for freeing the array.
  */
-float** csf_powspec(const float** aFrames,
-                    int aNFrames,
-                    int aNFFT);
+float* csf_powspec(const float* aFrames,
+                   int aNFrames,
+                   int aNFFT);
 
 /**
  * @brief Compute the log power spectrum of frames.
  *
  * Compute the log power spectrum of each frame in frames.
  *
- * @param aFrames The array of frames.
+ * @param aFrames The 2D array of frames, of shape (@p aNFrames, @p aNFFT).
  * @param aNFrames The number of frames.
  * @param aNFFT The FFT length to use.
  * @param aNorm If not zero, the log power spectrum is normalised so that the
  *              maximum value across all frames is 0.
  *
- * @return An array containing the log power spectrum of the
+ * @return A 2D array containing the log power spectrum of the
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
- *         The user is responsible for freeing each row in this array, as well
- *         as the array itself.
+ *         The user is responsible for freeing the array.
  */
-float** csf_logpowspec(const float** aFrames,
-                       int aNFrames,
-                       int aNFFT,
-                       int aNorm);
+float* csf_logpowspec(const float* aFrames,
+                      int aNFrames,
+                      int aNFFT,
+                      int aNorm);
 
 #ifdef __cplusplus
 }
