@@ -5,8 +5,16 @@ import c_speech_features as csf
 import python_speech_features as psf
 import scipy.io.wavfile as wav
 import numpy as np
+from datetime import datetime
 
 acceptable_error = 1.002
+speed_test_iterations = 250
+
+def time(callback):
+    before = datetime.utcnow()
+    for i in range(speed_test_iterations):
+        callback()
+    return (datetime.utcnow() - before).total_seconds()
 
 def print_error(error, msg='Error magnitude'):
     if error <= acceptable_error:
@@ -177,3 +185,42 @@ psf_preemphasis = psf.sigproc.preemphasis(audio)
 csf_preemphasis = csf.preemphasis(audio)
 assert(np.shape(psf_preemphasis) == np.shape(csf_preemphasis))
 error1d(psf_preemphasis, csf_preemphasis)
+
+print ''
+print 'Testing speed...'
+
+psf_elapsed = time(lambda: psf.mfcc(audio))
+csf_elapsed = time(lambda: csf.mfcc(audio))
+print 'mfcc - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.fbank(audio))
+csf_elapsed = time(lambda: csf.fbank(audio))
+print 'fbank - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.logfbank(audio))
+csf_elapsed = time(lambda: csf.logfbank(audio))
+print 'logfbank - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.ssc(audio))
+csf_elapsed = time(lambda: csf.ssc(audio))
+print 'ssc - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.hz2mel(16000))
+csf_elapsed = time(lambda: csf.hz2mel(16000))
+print 'hz2mel - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.mel2hz(5190))
+csf_elapsed = time(lambda: csf.mel2hz(5190))
+print 'mel2hz - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.get_filterbanks())
+csf_elapsed = time(lambda: csf.get_filterbanks())
+print 'get_filterbanks - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.lifter(psf_feat))
+csf_elapsed = time(lambda: csf.lifter(csf_feat))
+print 'lifter - %.2fx' % (psf_elapsed / csf_elapsed)
+
+psf_elapsed = time(lambda: psf.delta(psf_mfcc, 3))
+csf_elapsed = time(lambda: csf.delta(csf_mfcc, 3))
+print 'delta - %.2fx' % (psf_elapsed / csf_elapsed)
