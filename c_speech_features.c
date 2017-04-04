@@ -21,17 +21,18 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
                               aWinFunc, &feat, aAppendEnergy ? &energy : NULL);
 
   // Perform DCT-II
-  float sf1 = sqrtf(1 / (4 * (float)aNFilters));
-  float sf2 = sqrtf(1 / (2 * (float)aNFilters));
+  double sf1 = sqrtf(1 / (4 * (float)aNFilters));
+  double sf2 = sqrtf(1 / (2 * (float)aNFilters));
   float* mfcc = (float*)calloc(sizeof(float), n_frames * aNCep);
   for (i = 0, idx = 0, fidx = 0; i < n_frames;
        i++, idx += aNCep, fidx += aNFilters) {
     for (j = 0; j < aNCep; j++) {
+      double sum = 0.0;
       for (k = 0; k < aNFilters; k++) {
-        mfcc[idx+j] += (float)((double)feat[fidx+k] *
-          cos(M_PI * j * (2 * k + 1) / (double)(2 * aNFilters)));
+        sum += (double)feat[fidx+k] *
+          cos(M_PI * j * (2 * k + 1) / (double)(2 * aNFilters));
       }
-      mfcc[idx+j] *= 2 * ((i == 0 && j == 0) ? sf1 : sf2);
+      mfcc[idx+j] = (float)(2 * ((i == 0 && j == 0) ? sf1 : sf2) * sum);
     }
   }
 
@@ -249,7 +250,8 @@ csf_lifter(float* aCepstra, int aNFrames, int aNCep, int aCepLifter)
   int i, j, idx;
   for (i = 0, idx = 0; i < aNFrames; i++) {
     for (j = 0; j < aNCep; j++, idx++) {
-      aCepstra[idx] *= 1 + (aCepLifter / 2.0f) * sinf(M_PI * j / aCepLifter);
+      aCepstra[idx] *= 1 + (aCepLifter / 2.0f) *
+        sinf(M_PI * j / (float)aCepLifter);
     }
   }
 }

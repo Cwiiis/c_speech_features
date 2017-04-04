@@ -6,7 +6,7 @@ import python_speech_features as psf
 import scipy.io.wavfile as wav
 import numpy as np
 
-acceptable_error = 1.0005
+acceptable_error = 1.002
 
 def print_error(error, msg='Error magnitude'):
     if error <= acceptable_error:
@@ -46,7 +46,7 @@ def get_error(a, b):
         b += 1e-30
     return max(a, b) / min(a, b)
 
-fs, audio = wav.read('/home/cwiiis/Projects/DeepSpeech/data/ldc93s1/LDC93S1.wav')
+fs, audio = wav.read('test.wav')
 
 print 'Testing c_speech_features against python_speech_features'
 print 'Acceptable error: %f' % (acceptable_error)
