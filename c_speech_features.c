@@ -28,8 +28,8 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
        i++, idx += aNCep, fidx += aNFilters) {
     for (j = 0; j < aNCep; j++) {
       for (k = 0; k < aNFilters; k++) {
-        mfcc[idx+j] += feat[fidx+k] *
-          cosf(M_PI * j * (2 * k + 1) / (2 * aNFilters));
+        mfcc[idx+j] += (float)((double)feat[fidx+k] *
+          cos(M_PI * j * (2 * k + 1) / (double)(2 * aNFilters)));
       }
       mfcc[idx+j] *= 2 * ((i == 0 && j == 0) ? sf1 : sf2);
     }
@@ -159,7 +159,7 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
         int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
         float** aFeatures)
 {
-  int i, j, k, idx, fidx;
+  int i, j, k, idx, pidx, fidx;
   float* ssc;
   float* feat;
   float* fbank;
@@ -196,22 +196,24 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   fbank = csf_get_filterbanks(aNFilters, aNFFT, aSampleRate,
                               aLowFreq, aHighFreq);
   feat = (float*)calloc(sizeof(float), n_frames * aNFilters);
-  for (i = 0, idx = 0; i < n_frames; i++, idx += aNFilters) {
+  for (i = 0, idx = 0, pidx = 0; i < n_frames;
+       i++, idx += aNFilters, pidx += feat_width) {
     for (j = 0, fidx = 0; j < aNFilters; j++) {
       for (k = 0; k < feat_width; k++, fidx++) {
-        feat[idx + j] += pspec[idx + k] * fbank[fidx];
+        feat[idx + j] += pspec[pidx + k] * fbank[fidx];
       }
     }
   }
 
   // Calculate Spectral Sub-band Centroid features
   ssc = (float*)calloc(sizeof(float*), n_frames * aNFilters);
-  float r = ((aSampleRate / 2) - 1) / (float)(aNFFT / 2);
-  for (i = 0, idx = 0; i < n_frames; i++, idx += aNFilters) {
+  float r = ((aSampleRate / 2) - 1) / (float)(feat_width - 1);
+  for (i = 0, idx = 0, pidx = 0; i < n_frames;
+       i++, idx += aNFilters, pidx += feat_width) {
     for (j = 0, fidx = 0; j < aNFilters; j++) {
       float R = 1;
-      for (k = 0; k < aNFFT / 2 + 1; k++, fidx++) {
-        ssc[idx + j] += pspec[idx + k] * R * fbank[fidx];
+      for (k = 0; k < feat_width; k++, fidx++) {
+        ssc[idx + j] += pspec[pidx + k] * R * fbank[fidx];
         R += r;
       }
       ssc[idx + j] /= feat[idx + j];
@@ -373,9 +375,7 @@ csf_deframesig(const float* aFrames, int aNFrames, int aSigLen,
     aSigLen = padlen;
   }
 
-  if (aWinFunc) {
-    win_correct = (float*)calloc(sizeof(float), aSigLen);
-  }
+  win_correct = (float*)calloc(sizeof(float), aSigLen);
 
   base = 0;
   signal = (float*)calloc(sizeof(float), aSigLen);
@@ -388,17 +388,17 @@ csf_deframesig(const float* aFrames, int aNFrames, int aSigLen,
       signal[sidx] += aFrames[idx];
       if (aWinFunc) {
         win_correct[sidx] += aWinFunc[j] + 1e-15;
+      } else {
+        win_correct[sidx] += 1 + 1e-15;
       }
     }
     base += aFrameStep;
   }
 
-  if (aWinFunc) {
-    for (i = 0; i < aSigLen; i++) {
-      signal[i] /= win_correct[i];
-    }
-    free(win_correct);
+  for (i = 0; i < aSigLen; i++) {
+    signal[i] /= win_correct[i];
   }
+  free(win_correct);
 
   *aSignal = signal;
   return aSigLen;
@@ -435,6 +435,7 @@ csf_magspec(const float* aFrames, int aNFrames, int aNFFT)
     }
   }
 
+  KISS_FFT_FREE(cfg);
   free(out);
   return mspec;
 }

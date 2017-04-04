@@ -225,11 +225,11 @@ float csf_mel2hz(float aMel);
  * @return A 2D array of shape (@p aNFilters, @p aNFFT / 2 + 1). The user is
  *         responsible for freeing the array.
  */
-float*  csf_get_filterbanks(int aNFilters,
-                            int aNFFT,
-                            int aSampleRate,
-                            int aLowFreq,
-                            int aHighFreq);
+float* csf_get_filterbanks(int aNFilters,
+                           int aNFFT,
+                           int aSampleRate,
+                           int aLowFreq,
+                           int aHighFreq);
 
 /**
  * @brief Apply a cepstral lifter on a matrix of cepstra.
