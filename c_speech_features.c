@@ -248,12 +248,20 @@ void
 csf_lifter(float* aCepstra, int aNFrames, int aNCep, int aCepLifter)
 {
   int i, j, idx;
+
+  float lifter = aCepLifter / 2.0f;
+  float* factors = malloc(sizeof(float) * aNCep);
+  for (i = 0; i < aNCep; i++) {
+    factors[i] = 1 + lifter * sinf(M_PI * i / (float)aCepLifter);
+  }
+
   for (i = 0, idx = 0; i < aNFrames; i++) {
     for (j = 0; j < aNCep; j++, idx++) {
-      aCepstra[idx] *= 1 + (aCepLifter / 2.0f) *
-        sinf(M_PI * j / (float)aCepLifter);
+      aCepstra[idx] *= factors[j];
     }
   }
+
+  free(factors);
 }
 
 float*
