@@ -1,6 +1,6 @@
 # C Speech Features
 
-This library is a complete port of [python_speech_features](https://github.com/jameslyons/python_speech_features) to C. Currently, only 32-bit float is supported.
+This library is a complete port of [python_speech_features](https://github.com/jameslyons/python_speech_features) to C.
 
 ## Usage
 
@@ -21,7 +21,7 @@ kiss_fft130/tools/kiss_fftr.c
 Alternatively, you can build shared and static libraries to use with your project instead of importing the files directly. Using cmake, from within a check-out:
 
 ```
-cmake -DCMAKE_C_FLAGS="-O2" -DCMAKE_INSTALL_PREFIX="/usr/local"
+cmake -DCMAKE_C_FLAGS="-O2" -DCMAKE_INSTALL_PREFIX="/usr/local" -DENABLE_DOUBLE=OFF
 make
 ```
 
@@ -45,10 +45,10 @@ This will build and install the statically linked c_speech_features module, whic
 
 ### Differences to python_speech_features
 
-* c_speech_features only supports 32-bit float as the array data-format, and operates internally at 32-bit, for the most part. python_speech_features operates in 64-bit by default and this will account for small variations in results.
+* c_speech_features only supports one datatype, which is defined at compile-time. Currently, this can be either 32-bit (float), or 64-bit (double). python_speech_features operates in 64-bit by default.
 * python_speech_features.sigproc functions are located directly on the c_speech_features module.
 * The `winfunc` parameter is an array instead of a function, and is expected to be as wide as necessary depending on context.
 
 ### Uses
 
-It is not recommended to replace python_speech_features with c_speech_features in a Python context. python_speech_features is higher precision, safer and will output better error messages when fed with incorrect parameters. c_speech_features is most likely to crash in such situations. On the other hand, this module can be useful to debug issues when using c_speech_features in more appropriate contexts, or if you have very specific needs. c_speech_features is likely to perform faster when compiled with optimisation than python_speech_features, and if the lower precision is not an impediment, this can be useful.
+It is not recommended to replace python_speech_features with c_speech_features in a Python context. python_speech_features is safer and will output better error messages when fed with incorrect parameters. c_speech_features is most likely to crash in such situations. On the other hand, this module can be useful to debug issues when using c_speech_features in more appropriate contexts, or if you have very specific needs. c_speech_features is likely to perform faster when compiled with optimisation than python_speech_features. In 64-bit, the gains are minimal, except for particular functions, where as in 32-bit the gains can be substantial (at the cost of precision).

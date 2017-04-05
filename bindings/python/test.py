@@ -7,7 +7,7 @@ import scipy.io.wavfile as wav
 import numpy as np
 from datetime import datetime
 
-acceptable_error = 1.002
+acceptable_error = 1.0002
 speed_test_iterations = 250
 
 def time(callback):
@@ -49,9 +49,8 @@ def error1d(a, b):
 
 def get_error(a, b):
     # TODO: Something better than this
-    if min(a, b) == 0:
-        a += 1e-30
-        b += 1e-30
+    a = abs(a) + 1
+    b = abs(b) + 1
     return max(a, b) / min(a, b)
 
 fs, audio = wav.read('test.wav')

@@ -1,7 +1,8 @@
 %module c_speech_features
+%import "../../c_speech_features_config.h"
 %{
 #define SWIG_FILE_WITH_INIT
-#include "../../c_speech_features.h"
+#include "c_speech_features.h"
 #include "helper.h"
 %}
 
@@ -11,108 +12,108 @@ import_array();
 %}
 
 %apply (short* IN_ARRAY1, int DIM1) {(const short* signal, unsigned int signal_len)};
-%apply (float* IN_ARRAY1, int DIM1) {(float* sig, unsigned int sig_len)};
-%apply (float* IN_ARRAY1) {(float* winfunc)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** mfcc, int* mfcc_dim1, int* mfcc_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** features, int* features_dim1, int* features_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(float** energy, int* energy_dim1)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** filterbanks, int* filterbanks_dim1, int* filterbanks_dim2)};
-%apply (float* IN_ARRAY2, int DIM1, int DIM2) {(float* cepstra, int cepstra_dim1, int cepstra_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** cepstra_out, int* cepstra_out_dim1, int* cepstra_out_dim2)};
-%apply (float* IN_ARRAY2, int DIM1, int DIM2) {(float* feat, int feat_dim1, int feat_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** delta, int* delta_dim1, int* delta_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** frames, int* frames_dim1, int* frames_dim2)};
-%apply (float* IN_ARRAY2, int DIM1, int DIM2) {(float* frames, int frames_dim1, int frames_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(float** signal, int* signal_dim1)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** magspec, int* magspec_dim1, int* magspec_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** powspec, int* powspec_dim1, int* powspec_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(float** logpowspec, int* logpowspec_dim1, int* logpowspec_dim2)};
-%apply (float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(float** preemph, int* preemph_dim1)};
+%apply (csf_float* IN_ARRAY1, int DIM1) {(csf_float* sig, unsigned int sig_len)};
+%apply (csf_float* IN_ARRAY1) {(csf_float* winfunc)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** mfcc, int* mfcc_dim1, int* mfcc_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** features, int* features_dim1, int* features_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(csf_float** energy, int* energy_dim1)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** filterbanks, int* filterbanks_dim1, int* filterbanks_dim2)};
+%apply (csf_float* IN_ARRAY2, int DIM1, int DIM2) {(csf_float* cepstra, int cepstra_dim1, int cepstra_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** cepstra_out, int* cepstra_out_dim1, int* cepstra_out_dim2)};
+%apply (csf_float* IN_ARRAY2, int DIM1, int DIM2) {(csf_float* feat, int feat_dim1, int feat_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** delta, int* delta_dim1, int* delta_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** frames, int* frames_dim1, int* frames_dim2)};
+%apply (csf_float* IN_ARRAY2, int DIM1, int DIM2) {(csf_float* frames, int frames_dim1, int frames_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(csf_float** signal, int* signal_dim1)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** magspec, int* magspec_dim1, int* magspec_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** powspec, int* powspec_dim1, int* powspec_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** logpowspec, int* logpowspec_dim1, int* logpowspec_dim2)};
+%apply (csf_float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(csf_float** preemph, int* preemph_dim1)};
 
 %typemap(default) int samplerate { $1 = 16000; }
-%typemap(default) float winlen { $1 = 0.025f; }
-%typemap(default) float winstep { $1 = 0.01f; }
+%typemap(default) csf_float winlen { $1 = 0.025; }
+%typemap(default) csf_float winstep { $1 = 0.01; }
 %typemap(default) int numcep { $1 = 13; }
 %typemap(default) int nfilt { $1 = 26; }
 %typemap(default) int nfft { $1 = 512; }
 %typemap(default) int lowfreq { $1 = 0; }
 %typemap(default) int highfreq { $1 = 0; }
-%typemap(default) float preemph { $1 = 0.97f; }
+%typemap(default) csf_float preemph { $1 = 0.97; }
 %typemap(default) int ceplifter { $1 = 22; }
 %typemap(default) int appendEnergy { $1 = 1; }
-%typemap(default) float* winfunc { $1 = NULL; }
+%typemap(default) csf_float* winfunc { $1 = NULL; }
 %typemap(default) int L { $1 = 22; }
 %typemap(default) int norm { $1 = 1; }
-%typemap(default) float coeff { $1 = 0.95f; }
+%typemap(default) csf_float coeff { $1 = 0.95; }
 
 void mfcc(const short* signal,
           unsigned int signal_len,
           int samplerate,
-          float winlen,
-          float winstep,
+          csf_float winlen,
+          csf_float winstep,
           int numcep,
           int nfilt,
           int nfft,
           int lowfreq,
           int highfreq,
-          float preemph,
+          csf_float preemph,
           int ceplifter,
           int appendEnergy,
-          float* winfunc,
-          float** mfcc,
+          csf_float* winfunc,
+          csf_float** mfcc,
           int* mfcc_dim1,
           int* mfcc_dim2);
 
 void fbank(const short* signal,
            unsigned int signal_len,
            int samplerate,
-           float winlen,
-           float winstep,
+           csf_float winlen,
+           csf_float winstep,
            int nfilt,
            int nfft,
            int lowfreq,
            int highfreq,
-           float preemph,
-           float* winfunc,
-           float** features,
+           csf_float preemph,
+           csf_float* winfunc,
+           csf_float** features,
            int* features_dim1,
            int* features_dim2,
-           float** energy,
+           csf_float** energy,
            int* energy_dim1);
 
 void logfbank(const short* signal,
               unsigned int signal_len,
               int samplerate,
-              float winlen,
-              float winstep,
+              csf_float winlen,
+              csf_float winstep,
               int nfilt,
               int nfft,
               int lowfreq,
               int highfreq,
-              float preemph,
-              float* winfunc,
-              float** features,
+              csf_float preemph,
+              csf_float* winfunc,
+              csf_float** features,
               int* features_dim1,
               int* features_dim2);
 
 void ssc(const short* signal,
          unsigned int signal_len,
          int samplerate,
-         float winlen,
-         float winstep,
+         csf_float winlen,
+         csf_float winstep,
          int nfilt,
          int nfft,
          int lowfreq,
          int highfreq,
-         float preemph,
-         float* winfunc,
-         float** features,
+         csf_float preemph,
+         csf_float* winfunc,
+         csf_float** features,
          int* features_dim1,
          int* features_dim2);
 
-float hz2mel(float hz);
+csf_float hz2mel(csf_float hz);
 
-float mel2hz(float mel);
+csf_float mel2hz(csf_float mel);
 
 %typemap(default) int nfilt { $1 = 20; }
 
@@ -121,74 +122,74 @@ void get_filterbanks(int nfilt,
                      int samplerate,
                      int lowfreq,
                      int highfreq,
-                     float** filterbanks,
+                     csf_float** filterbanks,
                      int* filterbanks_dim1,
                      int* filterbanks_dim2);
 
-void lifter(float* cepstra,
+void lifter(csf_float* cepstra,
             int cepstra_dim1,
             int cepstra_dim2,
             int L,
-            float** cepstra_out,
+            csf_float** cepstra_out,
             int* cepstra_out_dim1,
             int* cepstra_out_dim2);
 
-void delta(float* feat,
+void delta(csf_float* feat,
            int feat_dim1,
            int feat_dim2,
            int N,
-           float** delta,
+           csf_float** delta,
            int* delta_dim1,
            int* delta_dim2);
 
 // Sigproc
 
-void framesig(float* sig,
+void framesig(csf_float* sig,
               unsigned int sig_len,
               int frame_len,
               int frame_step,
-              float* winfunc,
-              float** frames,
+              csf_float* winfunc,
+              csf_float** frames,
               int* frames_dim1,
               int* frames_dim2);
 
-void deframesig(float* frames,
+void deframesig(csf_float* frames,
                 int frames_dim1,
                 int frames_dim2,
                 int siglen,
                 int frame_len,
                 int frame_step,
-                float* winfunc,
-                float** signal,
+                csf_float* winfunc,
+                csf_float** signal,
                 int* signal_dim1);
 
-void magspec(float* frames,
+void magspec(csf_float* frames,
              int frames_dim1,
              int frames_dim2,
              int NFFT,
-             float** magspec,
+             csf_float** magspec,
              int* magspec_dim1,
              int* magspec_dim2);
 
-void powspec(float* frames,
+void powspec(csf_float* frames,
              int frames_dim1,
              int frames_dim2,
              int NFFT,
-             float** powspec,
+             csf_float** powspec,
              int* powspec_dim1,
              int* powspec_dim2);
 
-void logpowspec(float* frames,
+void logpowspec(csf_float* frames,
                 int frames_dim1,
                 int frames_dim2,
                 int NFFT,
                 int norm,
-                float** logpowspec,
+                csf_float** logpowspec,
                 int* logpowspec_dim1,
                 int* logpowspec_dim2);
 
 void preemphasis(const short* signal,
                  unsigned int signal_len,
-                 float coeff,
-                 float** preemph,
+                 csf_float coeff,
+                 csf_float** preemph,
                  int* preemph_dim1);

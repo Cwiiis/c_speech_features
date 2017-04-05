@@ -11,9 +11,10 @@
 #define __C_SPEECH_FEATURES_H__
 
 #include <math.h>
+#include "c_speech_features_config.h"
 
-#define CSF_HZ2MEL(x) (2595 * log10f(1+(x)/700.0f))
-#define CSF_MEL2HZ(x) (700 * (powf(10.0f, (x)/2595.0f) - 1))
+#define CSF_HZ2MEL(x) (2595.0 * csf_log10(1.0+(x)/700.0))
+#define CSF_MEL2HZ(x) (700.0 * (csf_pow(10.0, (x)/2595.0) - 1.0))
 
 #define CSF_2D_INDEX(w,x,y) (((y)*(w))+(x))
 #define CSF_2D_REF(m,w,x,y) ((m)[CSF_2D_INDEX(w,x,y)])
@@ -53,18 +54,18 @@ extern "C" {
 int csf_mfcc(const short* aSignal,
              unsigned int aSignalLen,
              int aSampleRate,
-             float aWinLen,
-             float aWinStep,
+             csf_float aWinLen,
+             csf_float aWinStep,
              int aNCep,
              int aNFilters,
              int aNFFT,
              int aLowFreq,
              int aHighFreq,
-             float aPreemph,
+             csf_float aPreemph,
              int aCepLifter,
              int aAppendEnergy,
-             float* aWinFunc,
-             float** aMFCC);
+             csf_float* aWinFunc,
+             csf_float** aMFCC);
 
 /**
  * @brief Compute Mel-filterbank energy features from an audio signal.
@@ -96,16 +97,16 @@ int csf_mfcc(const short* aSignal,
 int csf_fbank(const short* aSignal,
               unsigned int aSignalLen,
               int aSampleRate,
-              float aWinLen,
-              float aWinStep,
+              csf_float aWinLen,
+              csf_float aWinStep,
               int aNFilters,
               int aNFFT,
               int aLowFreq,
               int aHighFreq,
-              float aPreemph,
-              float* aWinFunc,
-              float** aFeatures,
-              float** aEnergy);
+              csf_float aPreemph,
+              csf_float* aWinFunc,
+              csf_float** aFeatures,
+              csf_float** aEnergy);
 
 /**
  * @brief Compute log Mel-filterbank energy features from an audio signal.
@@ -137,16 +138,16 @@ int csf_fbank(const short* aSignal,
 int csf_logfbank(const short* aSignal,
                  unsigned int aSignalLen,
                  int aSampleRate,
-                 float aWinLen,
-                 float aWinStep,
+                 csf_float aWinLen,
+                 csf_float aWinStep,
                  int aNFilters,
                  int aNFFT,
                  int aLowFreq,
                  int aHighFreq,
-                 float aPreemph,
-                 float* aWinFunc,
-                 float** aFeatures,
-                 float** aEnergy);
+                 csf_float aPreemph,
+                 csf_float* aWinFunc,
+                 csf_float** aFeatures,
+                 csf_float** aEnergy);
 
 /**
  * @brief Compute Spectral Sub-band Centroid features from an audio signal.
@@ -174,15 +175,15 @@ int csf_logfbank(const short* aSignal,
 int csf_ssc(const short* aSignal,
             unsigned int aSignalLen,
             int aSampleRate,
-            float aWinLen,
-            float aWinStep,
+            csf_float aWinLen,
+            csf_float aWinStep,
             int aNFilters,
             int aNFFT,
             int aLowFreq,
             int aHighFreq,
-            float aPreemph,
-            float* aWinFunc,
-            float** aFeatures);
+            csf_float aPreemph,
+            csf_float* aWinFunc,
+            csf_float** aFeatures);
 
 /**
  * @brief Convert a value in Hertz to Mels
@@ -193,7 +194,7 @@ int csf_ssc(const short* aSignal,
  *
  * @return A value in Mels.
  */
-float csf_hz2mel(float aHz);
+csf_float csf_hz2mel(csf_float aHz);
 
 /**
  * @brief Convert a value in Mels to Hertz
@@ -204,7 +205,7 @@ float csf_hz2mel(float aHz);
  *
  * @return A value in Hz.
  */
-float csf_mel2hz(float aMel);
+csf_float csf_mel2hz(csf_float aMel);
 
 /**
  * @brief Compute a Mel-filterbank.
@@ -225,11 +226,11 @@ float csf_mel2hz(float aMel);
  * @return A 2D array of shape (@p aNFilters, @p aNFFT / 2 + 1). The user is
  *         responsible for freeing the array.
  */
-float* csf_get_filterbanks(int aNFilters,
-                           int aNFFT,
-                           int aSampleRate,
-                           int aLowFreq,
-                           int aHighFreq);
+csf_float* csf_get_filterbanks(int aNFilters,
+                               int aNFFT,
+                               int aSampleRate,
+                               int aLowFreq,
+                               int aHighFreq);
 
 /**
  * @brief Apply a cepstral lifter on a matrix of cepstra.
@@ -243,7 +244,7 @@ float* csf_get_filterbanks(int aNFilters,
  * @param aCepLifter The lifting coefficient to use. 0 disables lifting.
  *                   (e.g. 22)
  */
-void csf_lifter(float* aCepstra,
+void csf_lifter(csf_float* aCepstra,
                 int aNFrames,
                 int aNCep,
                 int aCepLifter);
@@ -264,10 +265,10 @@ void csf_lifter(float* aCepstra,
  *         features. Each row contains holds 1 delta feature vector. The user
  *         is responsible for freeing the array.
  */
-float* csf_delta(const float* aFeatures,
-                 int aNFrames,
-                 int aNFrameLen,
-                 int aN);
+csf_float* csf_delta(const csf_float* aFeatures,
+                     int aNFrames,
+                     int aNFrameLen,
+                     int aN);
 
 /**
  * @brief Perform preemphasis on an input signal.
@@ -280,9 +281,9 @@ float* csf_delta(const float* aFeatures,
  *
  * @return The filtered signal. The user is responsible for freeing this array.
  */
-float* csf_preemphasis(const short* aSignal,
-                       unsigned int aSignalLen,
-                       float aCoeff);
+csf_float* csf_preemphasis(const short* aSignal,
+                           unsigned int aSignalLen,
+                           csf_float aCoeff);
 
 /**
  * @brief Frame a signal into overlapping frames.
@@ -304,13 +305,13 @@ float* csf_preemphasis(const short* aSignal,
  *
  * @return The number of frames.
  */
-int csf_framesig(const float* aSignal,
+int csf_framesig(const csf_float* aSignal,
                  unsigned int aSignalLen,
                  int aFrameLen,
                  int aPaddedFrameLen,
                  int aFrameStep,
-                 float* aWinFunc,
-                 float** aFrames);
+                 csf_float* aWinFunc,
+                 csf_float** aFrames);
 
 /**
  * @brief Perform overlap-add procedure to undo the action of csf_framesig().
@@ -331,13 +332,13 @@ int csf_framesig(const float* aSignal,
  *
  * @return Returns the length of @p aSignal.
  */
-int csf_deframesig(const float* aFrames,
+int csf_deframesig(const csf_float* aFrames,
                    int aNFrames,
                    int aSigLen,
                    int aFrameLen,
                    int aFrameStep,
-                   float* aWinFunc,
-                   float** aSignal);
+                   csf_float* aWinFunc,
+                   csf_float** aSignal);
 
 /**
  * @brief Compute the magnitude spectrum of frames.
@@ -352,9 +353,9 @@ int csf_deframesig(const float* aFrames,
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1). The
  *         user is responsible for freeing the array.
  */
-float* csf_magspec(const float* aFrames,
-                   int aNFrames,
-                   int aNFFT);
+csf_float* csf_magspec(const csf_float* aFrames,
+                       int aNFrames,
+                       int aNFFT);
 
 /**
  * @brief Compute the power spectrum of frames.
@@ -369,9 +370,9 @@ float* csf_magspec(const float* aFrames,
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
  *         The user is responsible for freeing the array.
  */
-float* csf_powspec(const float* aFrames,
-                   int aNFrames,
-                   int aNFFT);
+csf_float* csf_powspec(const csf_float* aFrames,
+                       int aNFrames,
+                       int aNFFT);
 
 /**
  * @brief Compute the log power spectrum of frames.
@@ -388,10 +389,10 @@ float* csf_powspec(const float* aFrames,
  *         corresponding frame, of shape (@p aNFrames, @p aNFFT / 2 + 1).
  *         The user is responsible for freeing the array.
  */
-float* csf_logpowspec(const float* aFrames,
-                      int aNFrames,
-                      int aNFFT,
-                      int aNorm);
+csf_float* csf_logpowspec(const csf_float* aFrames,
+                          int aNFrames,
+                          int aNFFT,
+                          int aNorm);
 
 #ifdef __cplusplus
 }

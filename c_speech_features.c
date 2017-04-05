@@ -8,22 +8,23 @@
 
 int
 csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
-         float aWinLen, float aWinStep, int aNCep, int aNFilters, int aNFFT,
-         int aLowFreq, int aHighFreq, float aPreemph, int aCepLifter,
-         int aAppendEnergy, float* aWinFunc, float** aMFCC)
+         csf_float aWinLen, csf_float aWinStep, int aNCep, int aNFilters,
+         int aNFFT, int aLowFreq, int aHighFreq, csf_float aPreemph,
+         int aCepLifter, int aAppendEnergy, csf_float* aWinFunc,
+         csf_float** aMFCC)
 {
   int i, j, k, idx, fidx;
-  float* feat;
-  float* energy;
+  csf_float* feat;
+  csf_float* energy;
 
   int n_frames = csf_logfbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
                               aNFilters, aNFFT, aLowFreq, aHighFreq, aPreemph,
                               aWinFunc, &feat, aAppendEnergy ? &energy : NULL);
 
   // Perform DCT-II
-  double sf1 = sqrtf(1 / (4 * (float)aNFilters));
-  double sf2 = sqrtf(1 / (2 * (float)aNFilters));
-  float* mfcc = (float*)calloc(sizeof(float), n_frames * aNCep);
+  double sf1 = csf_sqrt(1 / (4 * (double)aNFilters));
+  double sf2 = csf_sqrt(1 / (2 * (double)aNFilters));
+  csf_float* mfcc = (csf_float*)malloc(sizeof(csf_float) * n_frames * aNCep);
   for (i = 0, idx = 0, fidx = 0; i < n_frames;
        i++, idx += aNCep, fidx += aNFilters) {
     for (j = 0; j < aNCep; j++) {
@@ -32,7 +33,7 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
         sum += (double)feat[fidx+k] *
           cos(M_PI * j * (2 * k + 1) / (double)(2 * aNFilters));
       }
-      mfcc[idx+j] = (float)(2 * ((i == 0 && j == 0) ? sf1 : sf2) * sum);
+      mfcc[idx+j] = (csf_float)(sum * 2.0 * ((i == 0 && j == 0) ? sf1 : sf2));
     }
   }
 
@@ -47,7 +48,7 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   // Append energies
   if (aAppendEnergy) {
     for (i = 0, idx = 0; i < n_frames; i++, idx += aNCep) {
-      mfcc[idx] = logf(energy[i]);
+      mfcc[idx] = csf_log(energy[i]);
     }
 
     // Free energy array
@@ -62,19 +63,19 @@ csf_mfcc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
 int
 csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
-          float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-          int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
-          float** aFeatures, float** aEnergy)
+          csf_float aWinLen, csf_float aWinStep, int aNFilters, int aNFFT,
+          int aLowFreq, int aHighFreq, csf_float aPreemph, csf_float* aWinFunc,
+          csf_float** aFeatures, csf_float** aEnergy)
 {
   int i, j, k, idx, fidx, pidx;
-  float* feat;
-  float* fbank;
-  float* pspec;
-  float* frames;
-  float* energy;
-  float* preemph = csf_preemphasis(aSignal, aSignalLen, aPreemph);
-  int frame_len = (int)roundf(aWinLen * aSampleRate);
-  int frame_step = (int)roundf(aWinStep * aSampleRate);
+  csf_float* feat;
+  csf_float* fbank;
+  csf_float* pspec;
+  csf_float* frames;
+  csf_float* energy;
+  csf_float* preemph = csf_preemphasis(aSignal, aSignalLen, aPreemph);
+  int frame_len = (int)round(aWinLen * aSampleRate);
+  int frame_step = (int)round(aWinStep * aSampleRate);
   int feat_width = aNFFT / 2 + 1;
 
   // Frame the signal into overlapping frames
@@ -85,20 +86,20 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   free(preemph);
 
   // Compute the power spectrum of the frames
-  pspec = csf_powspec((const float*)frames, n_frames, aNFFT);
+  pspec = csf_powspec((const csf_float*)frames, n_frames, aNFFT);
 
   // Free frames
   free(frames);
 
   // Store the total energy in each frame
   if (aEnergy) {
-    energy = (float*)calloc(sizeof(float), n_frames);
+    energy = (csf_float*)calloc(sizeof(csf_float), n_frames);
     for (i = 0, idx = 0; i < n_frames; i++) {
       for (j = 0; j < feat_width; j++, idx++) {
         energy[i] += pspec[idx];
       }
-      if (energy[i] == 0.0f) {
-        energy[i] = FLT_MIN;
+      if (energy[i] == 0.0) {
+        energy[i] = csf_float_min;
       }
     }
   }
@@ -106,15 +107,15 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   // Compute the filter-bank energies
   fbank = csf_get_filterbanks(aNFilters, aNFFT, aSampleRate,
                               aLowFreq, aHighFreq);
-  feat = (float*)calloc(sizeof(float), n_frames * aNFilters);
+  feat = (csf_float*)calloc(sizeof(csf_float), n_frames * aNFilters);
   for (i = 0, idx = 0, pidx = 0; i < n_frames;
        i++, idx += aNFilters, pidx += feat_width) {
     for (j = 0, fidx = 0; j < aNFilters; j++) {
       for (k = 0; k < feat_width; k++, fidx++) {
         feat[idx + j] += pspec[pidx + k] * fbank[fidx];
       }
-      if (feat[idx + j] == 0.0f) {
-        feat[idx + j] = FLT_MIN;
+      if (feat[idx + j] == 0.0) {
+        feat[idx + j] = csf_float_min;
       }
     }
   }
@@ -136,9 +137,9 @@ csf_fbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
 int
 csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
-             float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-             int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
-             float** aFeatures, float** aEnergy)
+             csf_float aWinLen, csf_float aWinStep, int aNFilters, int aNFFT,
+             int aLowFreq, int aHighFreq, csf_float aPreemph,
+             csf_float* aWinFunc, csf_float** aFeatures, csf_float** aEnergy)
 {
   int i, j, idx;
   int n_frames = csf_fbank(aSignal, aSignalLen, aSampleRate, aWinLen, aWinStep,
@@ -147,7 +148,7 @@ csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
   for (i = 0, idx = 0; i < n_frames; i++) {
     for (j = 0; j < aNFilters; j++, idx++) {
-      (*aFeatures)[idx] = logf((*aFeatures)[idx]);
+      (*aFeatures)[idx] = csf_log((*aFeatures)[idx]);
     }
   }
 
@@ -156,19 +157,19 @@ csf_logfbank(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
 
 int
 csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
-        float aWinLen, float aWinStep, int aNFilters, int aNFFT,
-        int aLowFreq, int aHighFreq, float aPreemph, float* aWinFunc,
-        float** aFeatures)
+        csf_float aWinLen, csf_float aWinStep, int aNFilters, int aNFFT,
+        int aLowFreq, int aHighFreq, csf_float aPreemph, csf_float* aWinFunc,
+        csf_float** aFeatures)
 {
   int i, j, k, idx, pidx, fidx;
-  float* ssc;
-  float* feat;
-  float* fbank;
-  float* pspec;
-  float* frames;
-  float* preemph = csf_preemphasis(aSignal, aSignalLen, aPreemph);
-  int frame_len = (int)roundf(aWinLen * aSampleRate);
-  int frame_step = (int)roundf(aWinStep * aSampleRate);
+  csf_float* ssc;
+  csf_float* feat;
+  csf_float* fbank;
+  csf_float* pspec;
+  csf_float* frames;
+  csf_float* preemph = csf_preemphasis(aSignal, aSignalLen, aPreemph);
+  int frame_len = (int)round(aWinLen * aSampleRate);
+  int frame_step = (int)round(aWinStep * aSampleRate);
   int feat_width = aNFFT / 2 + 1;
 
   // Frame the signal into overlapping frames
@@ -179,7 +180,7 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   free(preemph);
 
   // Compute the power spectrum of the frames
-  pspec = csf_powspec((const float*)frames, n_frames, aNFFT);
+  pspec = csf_powspec((const csf_float*)frames, n_frames, aNFFT);
 
   // Free frames
   free(frames);
@@ -187,8 +188,8 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   // Make sure there are no zeroes in the power spectrum
   for (i = 0, idx = 0; i < n_frames; i++) {
     for (j = 0; j < feat_width; j++, idx++) {
-      if (pspec[idx] == 0.0f) {
-        pspec[idx] = FLT_MIN;
+      if (pspec[idx] == 0.0) {
+        pspec[idx] = csf_float_min;
       }
     }
   }
@@ -196,7 +197,7 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   // Compute the filter-bank energies
   fbank = csf_get_filterbanks(aNFilters, aNFFT, aSampleRate,
                               aLowFreq, aHighFreq);
-  feat = (float*)calloc(sizeof(float), n_frames * aNFilters);
+  feat = (csf_float*)calloc(sizeof(csf_float), n_frames * aNFilters);
   for (i = 0, idx = 0, pidx = 0; i < n_frames;
        i++, idx += aNFilters, pidx += feat_width) {
     for (j = 0, fidx = 0; j < aNFilters; j++) {
@@ -207,12 +208,12 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   }
 
   // Calculate Spectral Sub-band Centroid features
-  ssc = (float*)calloc(sizeof(float*), n_frames * aNFilters);
-  float r = ((aSampleRate / 2) - 1) / (float)(feat_width - 1);
+  ssc = (csf_float*)calloc(sizeof(csf_float*), n_frames * aNFilters);
+  csf_float r = ((aSampleRate / 2) - 1) / (csf_float)(feat_width - 1);
   for (i = 0, idx = 0, pidx = 0; i < n_frames;
        i++, idx += aNFilters, pidx += feat_width) {
     for (j = 0, fidx = 0; j < aNFilters; j++) {
-      float R = 1;
+      csf_float R = 1;
       for (k = 0; k < feat_width; k++, fidx++) {
         ssc[idx + j] += pspec[pidx + k] * R * fbank[fidx];
         R += r;
@@ -232,27 +233,27 @@ csf_ssc(const short* aSignal, unsigned int aSignalLen, int aSampleRate,
   return n_frames;
 }
 
-float
-csf_hz2mel(float aHz)
+csf_float
+csf_hz2mel(csf_float aHz)
 {
   return CSF_HZ2MEL(aHz);
 }
 
-float
-csf_mel2hz(float aMel)
+csf_float
+csf_mel2hz(csf_float aMel)
 {
   return CSF_MEL2HZ(aMel);
 }
 
 void
-csf_lifter(float* aCepstra, int aNFrames, int aNCep, int aCepLifter)
+csf_lifter(csf_float* aCepstra, int aNFrames, int aNCep, int aCepLifter)
 {
   int i, j, idx;
 
-  float lifter = aCepLifter / 2.0f;
-  float* factors = malloc(sizeof(float) * aNCep);
+  csf_float lifter = aCepLifter / 2.0;
+  csf_float* factors = malloc(sizeof(csf_float) * aNCep);
   for (i = 0; i < aNCep; i++) {
-    factors[i] = 1 + lifter * sinf(M_PI * i / (float)aCepLifter);
+    factors[i] = 1 + lifter * csf_sin(M_PI * i / (csf_float)aCepLifter);
   }
 
   for (i = 0, idx = 0; i < aNFrames; i++) {
@@ -264,23 +265,23 @@ csf_lifter(float* aCepstra, int aNFrames, int aNCep, int aCepLifter)
   free(factors);
 }
 
-float*
-csf_delta(const float* aFeatures, int aNFrames, int aNFrameLen, int aN)
+csf_float*
+csf_delta(const csf_float* aFeatures, int aNFrames, int aNFrameLen, int aN)
 {
   int i, j, k, idx;
-  float* delta;
+  csf_float* delta;
 
   if (aN < 1) {
     return NULL;
   }
 
-  int denominator = 0;
+  csf_float denominator = 0;
   for (i = 1; i <= aN; i++) {
-    denominator += pow(i, 2);
+    denominator += csf_pow(i, 2);
   }
   denominator *= 2;
 
-  delta = (float*)calloc(sizeof(float), aNFrames * aNFrameLen);
+  delta = (csf_float*)calloc(sizeof(csf_float), aNFrames * aNFrameLen);
   for (i = 0, idx = 0; i < aNFrames; i++, idx += aNFrameLen) {
     for (j = 0; j < aNFrameLen; j++) {
       for (k = -aN; k <= aN; k++) {
@@ -294,34 +295,36 @@ csf_delta(const float* aFeatures, int aNFrames, int aNFrameLen, int aN)
   return delta;
 }
 
-float*
+csf_float*
 csf_get_filterbanks(int aNFilters, int aNFFT, int aSampleRate,
                     int aLowFreq, int aHighFreq)
 {
   int i, j, idx;
   int feat_width = aNFFT / 2 + 1;
-  float lowmel = CSF_HZ2MEL(aLowFreq);
-  float highmel = CSF_HZ2MEL((aHighFreq <= aLowFreq) ?
+  csf_float lowmel = CSF_HZ2MEL(aLowFreq);
+  csf_float highmel = CSF_HZ2MEL((aHighFreq <= aLowFreq) ?
                              aSampleRate / 2 : aHighFreq);
   int* bin = (int*)malloc(sizeof(int) * (aNFilters + 2));
-  float* fbank = (float*)calloc(sizeof(float), aNFilters * feat_width);
+  csf_float* fbank =
+    (csf_float*)calloc(sizeof(csf_float), aNFilters * feat_width);
 
   for (i = 0; i < aNFilters + 2; i++) {
-    float melpoint = ((highmel - lowmel) / (float)(aNFilters + 1) * i) + lowmel;
-    bin[i] = (int)floorf((aNFFT + 1) *
-                         CSF_MEL2HZ(melpoint) / (float)aSampleRate);
+    csf_float melpoint = ((highmel - lowmel) /
+                          (csf_float)(aNFilters + 1) * i) + lowmel;
+    bin[i] = (int)csf_floor((aNFFT + 1) *
+                            CSF_MEL2HZ(melpoint) / (csf_float)aSampleRate);
   }
 
   for (i = 0, idx = 0; i < aNFilters; i++, idx += feat_width) {
     int start = MIN(bin[i], bin[i+1]);
     int end = MAX(bin[i], bin[i+1]);
     for (j = start; j < end; j++) {
-      fbank[idx + j] = (j - bin[i]) / (float)(bin[i+1]-bin[i]);
+      fbank[idx + j] = (j - bin[i]) / (csf_float)(bin[i+1]-bin[i]);
     }
     start = MIN(bin[i+1], bin[i+2]);
     end = MAX(bin[i+1], bin[i+2]);
     for (j = start; j < end; j++) {
-      fbank[idx + j] = (bin[i+2]-j) / (float)(bin[i+2]-bin[i+1]);
+      fbank[idx + j] = (bin[i+2]-j) / (csf_float)(bin[i+2]-bin[i+1]);
     }
   }
   free(bin);
@@ -330,17 +333,18 @@ csf_get_filterbanks(int aNFilters, int aNFFT, int aSampleRate,
 }
 
 int
-csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
-             int aPaddedFrameLen, int aFrameStep, float* aWinFunc,
-             float** aFrames)
+csf_framesig(const csf_float* aSignal, unsigned int aSignalLen, int aFrameLen,
+             int aPaddedFrameLen, int aFrameStep, csf_float* aWinFunc,
+             csf_float** aFrames)
 {
   int* indices;
-  float* frames;
+  csf_float* frames;
   int i, j, idx, iidx, n_frames;
   int frame_width = MAX(aPaddedFrameLen, aFrameLen);
 
   if (aSignalLen > aFrameLen) {
-    n_frames = 1 + (int)ceilf((aSignalLen - aFrameLen) / (float)aFrameStep);
+    n_frames = 1 + (int)csf_ceil((aSignalLen - aFrameLen) /
+                                 (csf_float)aFrameStep);
   } else {
     n_frames = 1;
   }
@@ -353,17 +357,17 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
     }
   }
 
-  frames = (float*)malloc(sizeof(float) * n_frames * frame_width);
+  frames = (csf_float*)malloc(sizeof(csf_float) * n_frames * frame_width);
   for (i = 0, idx = 0, iidx = 0; i < n_frames; i++) {
     for (j = 0; j < aFrameLen; j++, idx++, iidx++) {
       int index = indices[iidx];
-      frames[idx] = index < aSignalLen ? aSignal[index] : 0.0f;
+      frames[idx] = index < aSignalLen ? aSignal[index] : 0.0;
       if (aWinFunc) {
         frames[idx] *= aWinFunc[j];
       }
     }
     for (j = aFrameLen; j < aPaddedFrameLen; j++, idx++) {
-      frames[idx] = 0.0f;
+      frames[idx] = 0.0;
     }
   }
   free(indices);
@@ -373,22 +377,23 @@ csf_framesig(const float* aSignal, unsigned int aSignalLen, int aFrameLen,
 }
 
 int
-csf_deframesig(const float* aFrames, int aNFrames, int aSigLen,
-               int aFrameLen, int aFrameStep, float* aWinFunc, float** aSignal)
+csf_deframesig(const csf_float* aFrames, int aNFrames, int aSigLen,
+               int aFrameLen, int aFrameStep, csf_float* aWinFunc,
+               csf_float** aSignal)
 {
   int i, j, base, idx;
-  float* signal;
-  float* win_correct;
+  csf_float* signal;
+  csf_float* win_correct;
   int padlen = (aNFrames - 1) * aFrameStep + aFrameLen;
 
   if (aSigLen <= 0) {
     aSigLen = padlen;
   }
 
-  win_correct = (float*)calloc(sizeof(float), aSigLen);
+  win_correct = (csf_float*)calloc(sizeof(csf_float), aSigLen);
 
   base = 0;
-  signal = (float*)calloc(sizeof(float), aSigLen);
+  signal = (csf_float*)calloc(sizeof(csf_float), aSigLen);
   for (i = 0, idx = 0; i < aNFrames; i++) {
     for (j = 0; j < aFrameLen; j++, idx++) {
       int sidx = j + base;
@@ -414,34 +419,34 @@ csf_deframesig(const float* aFrames, int aNFrames, int aSigLen,
   return aSigLen;
 }
 
-float*
-csf_preemphasis(const short* aSignal, unsigned int aSignalLen, float aCoeff)
+csf_float*
+csf_preemphasis(const short* aSignal, unsigned int aSignalLen, csf_float aCoeff)
 {
   int i;
-  float* preemph = (float*)malloc(sizeof(float) * aSignalLen);
+  csf_float* preemph = (csf_float*)malloc(sizeof(csf_float) * aSignalLen);
 
   for (i = aSignalLen - 1; i >= 1; i--) {
     preemph[i] = aSignal[i] - aSignal[i-1] * aCoeff;
   }
-  preemph[0] = (float)aSignal[0];
+  preemph[0] = (csf_float)aSignal[0];
 
   return preemph;
 }
 
-float*
-csf_magspec(const float* aFrames, int aNFrames, int aNFFT)
+csf_float*
+csf_magspec(const csf_float* aFrames, int aNFrames, int aNFFT)
 {
   int i, j, idx;
   const int fft_out = aNFFT / 2 + 1;
   kiss_fftr_cfg cfg = kiss_fftr_alloc(aNFFT, 0, NULL, NULL);
-  float* mspec = (float*)malloc(sizeof(float) * aNFrames * fft_out);
+  csf_float* mspec = (csf_float*)malloc(sizeof(csf_float) * aNFrames * fft_out);
   kiss_fft_cpx* out = (kiss_fft_cpx*)malloc(sizeof(kiss_fft_cpx) * fft_out);
 
   for (i = 0, idx = 0; i < aNFrames; i++) {
     // Compute the magnitude spectrum
     kiss_fftr(cfg, &(aFrames[i * aNFFT]), out);
     for (j = 0; j < fft_out; j++, idx++) {
-      mspec[idx] = sqrtf(pow(out[j].r, 2.0f) + pow(out[j].i, 2.0f));
+      mspec[idx] = csf_sqrt(csf_pow(out[j].r, 2.0) + csf_pow(out[j].i, 2.0));
     }
   }
 
@@ -450,35 +455,35 @@ csf_magspec(const float* aFrames, int aNFrames, int aNFFT)
   return mspec;
 }
 
-float*
-csf_powspec(const float* aFrames, int aNFrames, int aNFFT)
+csf_float*
+csf_powspec(const csf_float* aFrames, int aNFrames, int aNFFT)
 {
   int i;
   const int fft_out = aNFFT / 2 + 1;
-  float* pspec = csf_magspec(aFrames, aNFrames, aNFFT);
+  csf_float* pspec = csf_magspec(aFrames, aNFrames, aNFFT);
 
   // Compute the power spectrum
   for (i = 0; i < aNFrames * fft_out; i++) {
-    pspec[i] = (1.0/aNFFT) * powf(pspec[i], 2.0f);
+    pspec[i] = (1.0/aNFFT) * powf(pspec[i], 2.0);
   }
 
   return pspec;
 }
 
-float*
-csf_logpowspec(const float* aFrames, int aNFrames, int aNFFT, int aNorm)
+csf_float*
+csf_logpowspec(const csf_float* aFrames, int aNFrames, int aNFFT, int aNorm)
 {
   int i;
   const int frames_len = aNFrames * (aNFFT / 2 + 1);
 
-  float* logpspec = csf_powspec(aFrames, aNFrames, aNFFT);
+  csf_float* logpspec = csf_powspec(aFrames, aNFrames, aNFFT);
 
-  float max = 0;
+  csf_float max = 0;
   for (i = 0; i < frames_len; i++) {
     if (logpspec[i] < 1e-30f) {
       logpspec[i] = -300;
     } else {
-      logpspec[i] = 10.0f * log10f(logpspec[i]);
+      logpspec[i] = 10.0 * csf_log10(logpspec[i]);
     }
     if (aNorm && logpspec[i] > max) {
       max = logpspec[i];

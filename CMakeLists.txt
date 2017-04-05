@@ -3,6 +3,12 @@ project (c_speech_features)
 
 include(GNUInstallDirs)
 
+option (ENABLE_DOUBLE "Enable double-precision floats" OFF)
+if (ENABLE_DOUBLE)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Dkiss_fft_scalar=double")
+endif ()
+configure_file ("c_speech_features_config.h.in" "c_speech_features_config.h")
+
 add_library (objlib OBJECT c_speech_features.c kiss_fft130/kiss_fft.c kiss_fft130/tools/kiss_fftr.c)
 set_property (TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
 
