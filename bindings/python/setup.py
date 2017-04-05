@@ -14,12 +14,15 @@ except AttributeError:
 _c_speech_features = Extension('_c_speech_features',
         ['c_speech_features.i', 'helper.c'],
         include_dirs = [numpy_include],
-        libraries = ['c_speech_features']
+        libraries = ['c_speech_features_static']
         )
 
 setup(name = 'C Speech Features',
       description = 'A C re-implementation of python_speech_features',
       author = 'Chris Lord',
-      version = '1.0',
+      author_email='chrislord.net@gmail.com',
+      version = '0.4.0',
+      license = 'MIT',
+      url = 'https://gitlab.com/Cwiiis/c_speech_features',
       ext_modules = [_c_speech_features]
       )
