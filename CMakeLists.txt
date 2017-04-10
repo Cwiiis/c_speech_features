@@ -18,4 +18,4 @@ add_library (c_speech_features SHARED $<TARGET_OBJECTS:objlib>)
 add_library (c_speech_features_static STATIC $<TARGET_OBJECTS:objlib>)
 
 install (TARGETS c_speech_features c_speech_features_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install (FILES c_speech_features.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES c_speech_features.h c_speech_features_config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
