@@ -43,8 +43,10 @@ extern "C" {
  *                   (e.g. 22)
  * @param aAppendEnergy If this is true, the zeroth cepstral coefficient is
  *                      replaced with the log of the total frame energy.
- * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ * @param aWinFunc An array of size @c frameLen, as determined by multiplying
+ *                 @p aWinLen by @p aSmapleRate, or @c NULL to be used as an
+ *                 analysis window to apply to each frame. Refer to
+ *                 csf_framesig().
  * @param[out] aMFCC An array containing features, of shape
  *                   (frames, @p aNCep). The user is responsible for freeing
  *                   the array.
@@ -84,8 +86,10 @@ int csf_mfcc(const short* aSignal,
  *                  higher than @p aSampleRate / 2. If this is lower or equal
  *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ * @param aWinFunc An array of size @c frameLen, as determined by multiplying
+ *                 @p aWinLen by @p aSmapleRate, or @c NULL to be used as an
+ *                 analysis window to apply to each frame. Refer to
+ *                 csf_framesig().
  * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
  *                       freeing the array.
@@ -125,8 +129,10 @@ int csf_fbank(const short* aSignal,
  *                  higher than @p aSampleRate / 2. If this is lower or equal
  *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ * @param aWinFunc An array of size @c frameLen, as determined by multiplying
+ *                 @p aWinLen by @p aSmapleRate, or @c NULL to be used as an
+ *                 analysis window to apply to each frame. Refer to
+ *                 csf_framesig().
  * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
  *                       freeing the array.
@@ -166,8 +172,10 @@ int csf_logfbank(const short* aSignal,
  *                  higher than @p aSampleRate / 2. If this is lower or equal
  *                  to @p aLowFreq, it will be treated as @p aSampleRate / 2.
  * @param aPreemph Preemphasis filter coefficient. 0 is no filter. (e.g. 0.97)
- * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ * @param aWinFunc An array of size @c frameLen, as determined by multiplying
+ *                 @p aWinLen by @p aSmapleRate, or @c NULL to be used as an
+ *                 analysis window to apply to each frame. Refer to
+ *                 csf_framesig().
  * @param[out] aFeatures A 2D array containing features, of shape
  *                       (frames, @p aNFilters). The user is responsible for
  *                       freeing the array.
@@ -298,7 +306,9 @@ csf_float* csf_preemphasis(const short* aSignal,
  * @param aFrameStep The number of samples after the start of the previous frame
  *                   that the next frame should begin.
  * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ *                 analysis window to apply to each frame. When specified,
+ *                 each overlapping frame of the signal will be multiplied
+ *                 by the value in the corresponding index of the array.
  * @param[out] aFrames A 2D array of frames, of shape
  *                     (@c frames, @p aPaddedFrameLen).
  *                     The user is responsible for freeing the array.
@@ -325,7 +335,9 @@ int csf_framesig(const csf_float* aSignal,
  * @param aFrameStep The number of samples after the start of the previous frame
  *                   that the next frame begins
  * @param aWinFunc An array of size @p aFrameLen, or @c NULL to be used as an
- *                 analysis window to apply to each frame.
+ *                 analysis window to apply to each frame. When specified,
+ *                 each sample of the signal will be divided by the aggregated
+ *                 value in the corresponding indices of the array.
  * @param[out] aSignal An array of samples. The length will be @p aSigLen if
  *                     specified. The user is responsible for freeing
  *                     this array.
