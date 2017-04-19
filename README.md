@@ -33,7 +33,7 @@ Refer to [c_speech_features.h](c_speech_features.h) for documentation.
 
 ### Python
 
-Building python bindings requires [SWIG](http://www.swig.org/) and [numpy](http://www.numpy.org/). After building the library, as documented above, run:
+Building python bindings requires [SWIG](http://www.swig.org/) and [numpy](http://www.numpy.org/). Run:
 
 ```
 python setup.py install
