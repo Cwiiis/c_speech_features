@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
-from distutils.core import *
-from distutils import sysconfig
+from setuptools import setup, find_packages, Extension
 
 import os
 import numpy
@@ -21,7 +20,8 @@ setup(name = 'c_speech_features',
       description = 'A C re-implementation of python_speech_features',
       author = 'Chris Lord',
       author_email='chrislord.net@gmail.com',
-      version = '0.4.0',
+      version = '0.4.1',
+      packages = find_packages(),
       license = 'MIT',
       url = 'https://gitlab.com/Cwiiis/c_speech_features',
       ext_modules = [_c_speech_features]
