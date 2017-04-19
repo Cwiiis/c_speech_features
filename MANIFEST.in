@@ -1,0 +1,11 @@
+include python/helper.h
+include python/numpy.i
+include python/test.py
+include python/test.wav
+recursive-include kiss_fft130 *
+include c_speech_features.c
+include c_speech_features.h
+include c_speech_features_config.h.in
+include CMakeLists.txt
+include LICENSE
+include README.md

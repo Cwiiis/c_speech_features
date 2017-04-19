@@ -17,7 +17,7 @@ _c_speech_features = Extension('_c_speech_features',
         libraries = ['c_speech_features_static']
         )
 
-setup(name = 'C Speech Features',
+setup(name = 'c_speech_features',
       description = 'A C re-implementation of python_speech_features',
       author = 'Chris Lord',
       author_email='chrislord.net@gmail.com',
