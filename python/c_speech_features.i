@@ -1,5 +1,5 @@
 %module c_speech_features
-%import "../../c_speech_features_config.h"
+%import "../c_speech_features_config.h"
 %{
 #define SWIG_FILE_WITH_INIT
 #include "c_speech_features.h"

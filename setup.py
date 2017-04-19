@@ -12,7 +12,7 @@ except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
 _c_speech_features = Extension('_c_speech_features',
-        ['c_speech_features.i', 'helper.c'],
+        ['python/c_speech_features.i', 'python/helper.c'],
         include_dirs = [numpy_include],
         libraries = ['c_speech_features_static']
         )

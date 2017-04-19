@@ -31,17 +31,15 @@ Refer to [c_speech_features.h](c_speech_features.h) for documentation.
 
 ## Bindings
 
-Bindings are located in the [bindings](bindings) directory, with each language in its own subdirectory.
-
 ### Python
 
-Building python bindings requires [SWIG](http://www.swig.org/) and [numpy](http://www.numpy.org/). After building the library, as documented above, change to the python bindings directory and run:
+Building python bindings requires [SWIG](http://www.swig.org/) and [numpy](http://www.numpy.org/). After building the library, as documented above, run:
 
 ```
 python setup.py install
 ```
 
-This will build and install the statically linked c_speech_features module, which can then be used in any python script. Refer to [bindings/python/test.py](bindings/python/test.py) to see examples of its use. For the most part, it is a drop-in replacement for python_speech_features.
+This will build and install the statically linked c_speech_features module, which can then be used in any python script. Refer to [python/test.py](python/test.py) to see examples of its use. For the most part, it is a drop-in replacement for python_speech_features.
 
 ### Differences to python_speech_features
 
