@@ -1,7 +1,7 @@
 include python/helper.h
 include python/numpy.i
-include python/test.py
-include python/test.wav
+include python/test/test.py
+include python/test/test.wav
 recursive-include kiss_fft130 *
 include c_speech_features.c
 include c_speech_features.h
