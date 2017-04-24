@@ -39,7 +39,7 @@ Building python bindings requires [SWIG](http://www.swig.org/) and [numpy](http:
 python setup.py install
 ```
 
-This will build and install the statically linked c_speech_features module, which can then be used in any python script. Refer to [python/test.py](python/test.py) to see examples of its use. For the most part, it is a drop-in replacement for python_speech_features.
+This will build and install the statically linked c_speech_features module, which can then be used in any python script. Refer to [python/test/test.py](python/test/test.py) to see examples of its use. For the most part, it is a drop-in replacement for python_speech_features.
 
 ### Differences to python_speech_features
 
