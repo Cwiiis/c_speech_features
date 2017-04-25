@@ -28,8 +28,12 @@ class CmakeBuild(build_ext):
             subprocess.call(['make'], cwd=path)
         build_ext.run(self)
 
-c_speech_features = Extension('_c_speech_features',
-        ['python/c_speech_features.i', 'python/helper.c'],
+c_speech_features = Extension('_c_speech_features_base',
+        ['python/base.i', 'python/base.c'],
+        include_dirs = [numpy_include],
+        libraries = ['c_speech_features_static'])
+sigproc = Extension('_c_speech_features_sigproc',
+        ['python/sigproc.i', 'python/sigproc.c'],
         include_dirs = [numpy_include],
         libraries = ['c_speech_features_static'])
 
@@ -37,11 +41,11 @@ setup(name = 'c_speech_features',
       description = 'A C re-implementation of python_speech_features',
       author = 'Chris Lord',
       author_email='chrislord.net@gmail.com',
-      version = '0.4.6',
-      package_dir = {'': 'python'},
-      packages = [ '' ],
+      version = '0.4.7',
+      package_dir = {'c_speech_features': 'python'},
+      packages = [ 'c_speech_features' ],
       cmdclass = { 'build': BuildExtFirst,
                    'build_ext': CmakeBuild },
       license = 'MIT',
       url = 'https://gitlab.com/Cwiiis/c_speech_features',
-      ext_modules = [c_speech_features])
+      ext_modules = [c_speech_features, sigproc])

@@ -141,7 +141,7 @@ print ''
 print 'framesig'
 print '========'
 psf_framesig = psf.sigproc.framesig(audio, frame_len=0.025*16000, frame_step=0.01*16000)
-csf_framesig = csf.framesig(audio, frame_len=int(0.025*16000), frame_step=int(0.01*16000))
+csf_framesig = csf.sigproc.framesig(audio, frame_len=int(0.025*16000), frame_step=int(0.01*16000))
 assert(np.shape(psf_framesig) == np.shape(csf_framesig))
 error2d(psf_framesig, csf_framesig)
 
@@ -149,7 +149,7 @@ print ''
 print 'deframesig'
 print '=========='
 psf_deframesig = psf.sigproc.deframesig(psf_framesig, len(audio), frame_len=0.025*16000, frame_step=0.01*16000)
-csf_deframesig = csf.deframesig(np.array(psf_framesig, dtype=np.float32), len(audio), frame_len=int(0.025*16000), frame_step=int(0.01*16000))
+csf_deframesig = csf.sigproc.deframesig(np.array(psf_framesig, dtype=np.float32), len(audio), frame_len=int(0.025*16000), frame_step=int(0.01*16000))
 assert(np.shape(psf_deframesig) == np.shape(csf_deframesig))
 error1d(psf_deframesig, csf_deframesig)
 
@@ -157,7 +157,7 @@ print ''
 print 'magspec'
 print '======='
 psf_magspec = psf.sigproc.magspec(psf_framesig, 512)
-csf_magspec = csf.magspec(np.array(psf_framesig, dtype=np.float32), 512)
+csf_magspec = csf.sigproc.magspec(np.array(psf_framesig, dtype=np.float32), 512)
 assert(np.shape(psf_magspec) == np.shape(csf_magspec))
 error2d(psf_magspec, csf_magspec)
 
@@ -165,7 +165,7 @@ print ''
 print 'powspec'
 print '======='
 psf_powspec = psf.sigproc.powspec(psf_framesig, 512)
-csf_powspec = csf.powspec(np.array(psf_framesig, dtype=np.float32), 512)
+csf_powspec = csf.sigproc.powspec(np.array(psf_framesig, dtype=np.float32), 512)
 assert(np.shape(psf_powspec) == np.shape(csf_powspec))
 error2d(psf_powspec, csf_powspec)
 
@@ -173,7 +173,7 @@ print ''
 print 'logpowspec'
 print '=========='
 psf_logpowspec = psf.sigproc.logpowspec(psf_framesig, 512)
-csf_logpowspec = csf.logpowspec(np.array(psf_framesig, dtype=np.float32), 512)
+csf_logpowspec = csf.sigproc.logpowspec(np.array(psf_framesig, dtype=np.float32), 512)
 assert(np.shape(psf_logpowspec) == np.shape(csf_logpowspec))
 error2d(psf_logpowspec, csf_logpowspec)
 
@@ -181,7 +181,7 @@ print ''
 print 'preemphasis'
 print '==========='
 psf_preemphasis = psf.sigproc.preemphasis(audio)
-csf_preemphasis = csf.preemphasis(audio)
+csf_preemphasis = csf.sigproc.preemphasis(audio)
 assert(np.shape(psf_preemphasis) == np.shape(csf_preemphasis))
 error1d(psf_preemphasis, csf_preemphasis)
 

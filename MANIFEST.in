@@ -1,4 +1,5 @@
-include python/helper.h
+include python/base.h
+include python/sigproc.h
 include python/numpy.i
 include python/test/test.py
 include python/test/test.wav

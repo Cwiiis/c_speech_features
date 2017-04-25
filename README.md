@@ -44,7 +44,6 @@ This will build and install the statically linked c_speech_features module, whic
 ### Differences to python_speech_features
 
 * c_speech_features only supports one datatype, which is defined at compile-time. Currently, this can be either 32-bit (float), or 64-bit (double). python_speech_features operates in 64-bit by default.
-* python_speech_features.sigproc functions are located directly on the c_speech_features module.
 * The `winfunc` parameter is an array instead of a function, and is expected to be as wide as necessary depending on context.
 
 ### Uses

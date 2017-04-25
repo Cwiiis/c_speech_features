@@ -1,9 +1,14 @@
-%module c_speech_features
+%module c_speech_features_base
+
+%pythoncode %{
+from c_speech_features import c_speech_features_sigproc as sigproc
+%}
+
 %import "../c_speech_features_config.h"
 %{
 #define SWIG_FILE_WITH_INIT
 #include "c_speech_features.h"
-#include "helper.h"
+#include "base.h"
 %}
 
 %include "numpy.i"
@@ -12,7 +17,6 @@ import_array();
 %}
 
 %apply (short* IN_ARRAY1, int DIM1) {(const short* signal, unsigned int signal_len)};
-%apply (csf_float* IN_ARRAY1, int DIM1) {(csf_float* sig, unsigned int sig_len)};
 %apply (csf_float* IN_ARRAY1) {(csf_float* winfunc)};
 %apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** mfcc, int* mfcc_dim1, int* mfcc_dim2)};
 %apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** features, int* features_dim1, int* features_dim2)};
@@ -22,13 +26,6 @@ import_array();
 %apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** cepstra_out, int* cepstra_out_dim1, int* cepstra_out_dim2)};
 %apply (csf_float* IN_ARRAY2, int DIM1, int DIM2) {(csf_float* feat, int feat_dim1, int feat_dim2)};
 %apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** delta, int* delta_dim1, int* delta_dim2)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** frames, int* frames_dim1, int* frames_dim2)};
-%apply (csf_float* IN_ARRAY2, int DIM1, int DIM2) {(csf_float* frames, int frames_dim1, int frames_dim2)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(csf_float** signal, int* signal_dim1)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** magspec, int* magspec_dim1, int* magspec_dim2)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** powspec, int* powspec_dim1, int* powspec_dim2)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(csf_float** logpowspec, int* logpowspec_dim1, int* logpowspec_dim2)};
-%apply (csf_float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(csf_float** preemph, int* preemph_dim1)};
 
 %typemap(default) int samplerate { $1 = 16000; }
 %typemap(default) csf_float winlen { $1 = 0.025; }
@@ -43,8 +40,6 @@ import_array();
 %typemap(default) int appendEnergy { $1 = 1; }
 %typemap(default) csf_float* winfunc { $1 = NULL; }
 %typemap(default) int L { $1 = 22; }
-%typemap(default) int norm { $1 = 1; }
-%typemap(default) csf_float coeff { $1 = 0.95; }
 
 void mfcc(const short* signal,
           unsigned int signal_len,
@@ -141,55 +136,3 @@ void delta(csf_float* feat,
            csf_float** delta,
            int* delta_dim1,
            int* delta_dim2);
-
-// Sigproc
-
-void framesig(csf_float* sig,
-              unsigned int sig_len,
-              int frame_len,
-              int frame_step,
-              csf_float* winfunc,
-              csf_float** frames,
-              int* frames_dim1,
-              int* frames_dim2);
-
-void deframesig(csf_float* frames,
-                int frames_dim1,
-                int frames_dim2,
-                int siglen,
-                int frame_len,
-                int frame_step,
-                csf_float* winfunc,
-                csf_float** signal,
-                int* signal_dim1);
-
-void magspec(csf_float* frames,
-             int frames_dim1,
-             int frames_dim2,
-             int NFFT,
-             csf_float** magspec,
-             int* magspec_dim1,
-             int* magspec_dim2);
-
-void powspec(csf_float* frames,
-             int frames_dim1,
-             int frames_dim2,
-             int NFFT,
-             csf_float** powspec,
-             int* powspec_dim1,
-             int* powspec_dim2);
-
-void logpowspec(csf_float* frames,
-                int frames_dim1,
-                int frames_dim2,
-                int NFFT,
-                int norm,
-                csf_float** logpowspec,
-                int* logpowspec_dim1,
-                int* logpowspec_dim2);
-
-void preemphasis(const short* signal,
-                 unsigned int signal_len,
-                 csf_float coeff,
-                 csf_float** preemph,
-                 int* preemph_dim1);
