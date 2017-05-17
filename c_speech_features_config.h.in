@@ -1,4 +1,6 @@
 
+#include <float.h>
+
 #cmakedefine ENABLE_DOUBLE
 
 #ifdef ENABLE_DOUBLE
